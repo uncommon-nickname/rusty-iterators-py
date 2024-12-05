@@ -5,17 +5,23 @@ from typing import Generator, Optional, Protocol, Self, Sequence, final, overrid
 
 
 class IterInterface[T](Protocol):
-    def next(self) -> Optional[T]:
-        raise NotImplementedError
-
-    def map[R](self, f: Callable[[T], R]) -> Map[T, R]:
-        return Map(self, f)
-
     def collect(self) -> list[T]:
         result = []
         while item := self.next():
             result.append(item)
         return result
+
+    def count(self) -> int:
+        ctr = 0
+        while self.next():
+            ctr += 1
+        return ctr
+
+    def map[R](self, f: Callable[[T], R]) -> Map[T, R]:
+        return Map(self, f)
+
+    def next(self) -> Optional[T]:
+        raise NotImplementedError
 
     def filter(self, f: Callable[[T], bool]) -> Filter[T]:
         return Filter(self, f)
@@ -49,12 +55,17 @@ class Map[T, R](IterInterface[R]):
         self.f = f
 
     @override
+    def count(self) -> int:
+        return self.iter.count()
+
+    @override
     def next(self) -> Optional[R]:
         if (item := self.iter.next()) is None:
             return None
         return self.f(item)
 
 
+@final
 class Filter[T](IterInterface[T]):
     def __init__(self, iter: IterInterface[T], f: Callable[[T], bool]) -> None:
         self.iter = iter
