@@ -1,14 +1,14 @@
-from typing import Generator
+from typing import Iterator
 
 import pytest
 
 
 @pytest.fixture
-def empty_gen() -> Generator[int, None, None]:
+def empty_gen() -> Iterator[int]:
     empty: list[int] = []
     return (x for x in empty)
 
 
 @pytest.fixture
-def gen() -> Generator[int, None, None]:
+def gen() -> Iterator[int]:
     return (x for x in [1, 2, 3, 4])

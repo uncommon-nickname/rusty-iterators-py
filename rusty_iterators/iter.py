@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import Generator, Optional, Protocol, Self, Sequence, final, override
+from typing import Iterator, Optional, Protocol, Self, Sequence, final, override
 
 
 class IterInterface[T](Protocol):
@@ -28,8 +28,8 @@ class IterInterface[T](Protocol):
 
 
 @final
-class Iterator[T](IterInterface[T]):
-    def __init__(self, gen: Generator[T, None, None]) -> None:
+class Iter[T](IterInterface[T]):
+    def __init__(self, gen: Iterator[T]) -> None:
         self.gen = gen
 
     @classmethod
