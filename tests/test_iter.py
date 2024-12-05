@@ -45,6 +45,11 @@ class TestIteratorCollect:
         assert it.collect() == []
 
     def test_iterator_allows_user_to_collect_null_values(self) -> None:
+        # In the early version of the interface, the `.next()` method
+        # used `None` as an indication that iterator is depleted. This
+        # introduced confusion regarding the existance of `None` values
+        # in the iterator itself, so it was redesigned. This test is
+        # a sanity check.
         gen = (x for x in [None, None, None])
         result = Iter(gen).collect()
 

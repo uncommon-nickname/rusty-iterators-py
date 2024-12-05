@@ -60,6 +60,10 @@ class Map[T, R](IterInterface[R]):
 
     @override
     def count(self) -> int:
+        # Map doesn't influence the iterator size. We consume the
+        # iterator anyway, so we can avoid unnecessary computation
+        # by skipping the map evaluation and using the underlying
+        # iterator directly.
         return self.iter.count()
 
     @override
@@ -78,6 +82,6 @@ class Filter[T](IterInterface[T]):
     @override
     def next(self) -> Option[T]:
         while (item := self.iter.next()).exists:
-            if self.f(item.value) is True:
+            if self.f(item.value):
                 return item
         return item
