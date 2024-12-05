@@ -21,6 +21,12 @@ class IterInterface[T](Protocol):
             ctr += 1
         return ctr
 
+    def last(self) -> Option[T]:
+        last: Option[T] = NoValue()
+        while (curr := self.next()).exists:
+            last = curr
+        return last
+
     def map[R](self, f: Callable[[T], R]) -> Map[T, R]:
         return Map(self, f)
 

@@ -66,3 +66,15 @@ class TestIteratorCount:
         result = Iter(empty_gen).count()
 
         assert result == 0
+
+
+class TestIteratorLast:
+    def test_last_returns_last_item(self, gen: Iterator[int]) -> None:
+        result = Iter(gen).last()
+
+        assert result.exists and result.value == 4
+
+    def test_last_returns_no_value_when_empty(self, empty_gen: Iterator[int]) -> None:
+        result = Iter(empty_gen).last()
+
+        assert result.exists is False
