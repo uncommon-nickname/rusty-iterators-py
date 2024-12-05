@@ -20,13 +20,16 @@ class TestIteratorNext:
     def test_next_advances_an_iterator(self, gen: Iterator[int]) -> None:
         it = Iter(gen)
 
-        assert it.next() == 1
-        assert it.next() == 2
+        result = it.next()
+        assert result.exists and result.value == 1
+
+        result = it.next()
+        assert result.exists and result.value == 2
 
     def test_next_returns_none_when_iterator_is_depleted(self, empty_gen: Iterator[int]) -> None:
         it = Iter(empty_gen)
 
-        assert it.next() is None
+        assert it.next().exists is False
 
 
 class TestIteratorCollect:
@@ -40,6 +43,12 @@ class TestIteratorCollect:
 
         assert it.collect() == [1, 2, 3, 4]
         assert it.collect() == []
+
+    def test_iterator_allows_user_to_collect_null_values(self) -> None:
+        gen = (x for x in [None, None, None])
+        result = Iter(gen).collect()
+
+        assert result == [None, None, None]
 
 
 class TestIteratorCount:

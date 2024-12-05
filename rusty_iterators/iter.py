@@ -1,26 +1,30 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import Iterator, Optional, Protocol, Self, Sequence, final, override
+from typing import Iterator, Protocol, Self, Sequence, final, override
+
+from .option import NoValue, Value
+
+type Option[T] = Value[T] | NoValue
 
 
 class IterInterface[T](Protocol):
     def collect(self) -> list[T]:
         result = []
-        while item := self.next():
-            result.append(item)
+        while (item := self.next()).exists:
+            result.append(item.value)
         return result
 
     def count(self) -> int:
         ctr = 0
-        while self.next():
+        while self.next().exists:
             ctr += 1
         return ctr
 
     def map[R](self, f: Callable[[T], R]) -> Map[T, R]:
         return Map(self, f)
 
-    def next(self) -> Optional[T]:
+    def next(self) -> Option[T]:
         raise NotImplementedError
 
     def filter(self, f: Callable[[T], bool]) -> Filter[T]:
@@ -41,11 +45,11 @@ class Iter[T](IterInterface[T]):
         return cls(item for item in iter)
 
     @override
-    def next(self) -> Optional[T]:
+    def next(self) -> Option[T]:
         try:
-            return next(self.gen)
+            return Value(next(self.gen))
         except StopIteration:
-            return None
+            return NoValue()
 
 
 @final
@@ -59,10 +63,10 @@ class Map[T, R](IterInterface[R]):
         return self.iter.count()
 
     @override
-    def next(self) -> Optional[R]:
-        if (item := self.iter.next()) is None:
-            return None
-        return self.f(item)
+    def next(self) -> Option[R]:
+        if (item := self.iter.next()).exists:
+            return Value(self.f(item.value))
+        return item
 
 
 @final
@@ -72,8 +76,8 @@ class Filter[T](IterInterface[T]):
         self.f = f
 
     @override
-    def next(self) -> Optional[T]:
-        while item := self.iter.next():
-            if self.f(item) is True:
+    def next(self) -> Option[T]:
+        while (item := self.iter.next()).exists:
+            if self.f(item.value) is True:
                 return item
-        return None
+        return item
