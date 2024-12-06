@@ -30,3 +30,12 @@ class TestFilterCount:
         result = Iter(gen).filter(lambda x: x % 2 == 0).filter(lambda x: x == 2).count()
 
         assert result == 1
+
+
+class TestFilterCopy:
+    def test_copied_iterator_depletes_separately(self, gen: Iterator[int]) -> None:
+        it_orig = Iter(gen).filter(lambda x: x % 2 == 0)
+        it_copy = it_orig.copy()
+
+        assert it_orig.collect() == [2, 4]
+        assert it_copy.collect() == [2, 4]
