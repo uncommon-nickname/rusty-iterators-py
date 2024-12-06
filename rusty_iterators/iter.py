@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import itertools
 from collections.abc import Callable
 from typing import Iterator, Protocol, Self, Sequence, final, override
 
@@ -15,11 +16,17 @@ class IterInterface[T](Protocol):
             result.append(item.value)
         return result
 
+    def copy(self) -> IterInterface[T]:
+        raise NotImplementedError
+
     def count(self) -> int:
         ctr = 0
         while self.next().exists:
             ctr += 1
         return ctr
+
+    def cycle(self) -> Cycle[T]:
+        return Cycle(self)
 
     def last(self) -> Option[T]:
         last: Option[T] = NoValue()
@@ -51,6 +58,17 @@ class Iter[T](IterInterface[T]):
         return cls(item for item in iter)
 
     @override
+    def copy(self) -> Iter[T]:
+        # Generators in python are a simple wrappers around stack frames
+        # and Python interface does not really have a way to copy a
+        # stack frame. It is theoretically possible from CPython level,
+        # but it is not currently supported from Python interface. As a
+        # workaround we can rebuild both the original and copied
+        # iterators from ground up.
+        self.gen, new_copy = itertools.tee(self.gen)
+        return Iter(new_copy)
+
+    @override
     def next(self) -> Option[T]:
         try:
             return Value(next(self.gen))
@@ -63,6 +81,11 @@ class Map[T, R](IterInterface[R]):
     def __init__(self, iter: IterInterface[T], f: Callable[[T], R]) -> None:
         self.iter = iter
         self.f = f
+
+    @override
+    def copy(self) -> Map[T, R]:
+        # We can reuse a function pointer, no need to create a copy.
+        return Map(self.iter.copy(), self.f)
 
     @override
     def count(self) -> int:
@@ -86,8 +109,33 @@ class Filter[T](IterInterface[T]):
         self.f = f
 
     @override
+    def copy(self) -> Filter[T]:
+        # We can reuse a function pointer, no need to create a copy.
+        return Filter(self.iter.copy(), self.f)
+
+    @override
     def next(self) -> Option[T]:
         while (item := self.iter.next()).exists:
             if self.f(item.value):
                 return item
         return item
+
+
+@final
+class Cycle[T](IterInterface[T]):
+    def __init__(self, iter: IterInterface[T]) -> None:
+        self.orig = iter
+        self.iter = iter.copy()
+
+    @override
+    def copy(self) -> Cycle[T]:
+        return Cycle(self.iter.copy())
+
+    @override
+    def next(self) -> Option[T]:
+        if (item := self.iter.next()).exists:
+            return item
+
+        self.iter = self.orig.copy()
+
+        return self.iter.next()

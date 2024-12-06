@@ -78,3 +78,12 @@ class TestIteratorLast:
         result = Iter(empty_gen).last()
 
         assert result.exists is False
+
+
+class TestIteratorCopy:
+    def test_copied_iterator_depletes_separately(self, gen: Iterator[int]) -> None:
+        it_orig = Iter(gen)
+        it_copy = it_orig.copy()
+
+        assert it_orig.collect() == [1, 2, 3, 4]
+        assert it_copy.collect() == [1, 2, 3, 4]

@@ -25,3 +25,12 @@ class TestMapCount:
         result = Iter(empty_gen).map(lambda x: x + 1).count()
 
         assert result == 0
+
+
+class TestMapCopy:
+    def test_copied_iterator_depletes_separately(self, gen: Iterator[int]) -> None:
+        it_orig = Iter(gen).map(lambda x: x * 2)
+        it_copy = it_orig.copy()
+
+        assert it_orig.collect() == [2, 4, 6, 8]
+        assert it_copy.collect() == [2, 4, 6, 8]
