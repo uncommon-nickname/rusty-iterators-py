@@ -11,29 +11,31 @@ type EnumerateItem[T] = tuple[int, T]
 
 
 class IterInterface[T](Protocol):
+    def __iter__(self) -> Self:
+        return self
+
+    def __next__(self) -> T:
+        return self.next()
+
     def advance_by(self, n: int) -> Self:
         if n < 0:
             raise ValueError("Amount to advance by must be greater or equal to 0.")
         for _ in range(n):
-            if not self.next().exists:
+            try:
+                self.next()
+            except StopIteration:
                 break
         return self
 
     def collect(self) -> list[T]:
-        # FIXME: <@uncommon-nickname>
-        # Potential perf bottleneck. When appending large number of items
-        # to the array, it will resize and reallocate multiple times.
-        result = []
-        while (item := self.next()).exists:
-            result.append(item.value)
-        return result
+        return [item for item in self]
 
     def copy(self) -> IterInterface[T]:
         raise NotImplementedError
 
     def count(self) -> int:
         ctr = 0
-        while self.next().exists:
+        for _ in self:
             ctr += 1
         return ctr
 
@@ -45,23 +47,25 @@ class IterInterface[T](Protocol):
 
     def last(self) -> Option[T]:
         last: Option[T] = NoValue()
-        while (curr := self.next()).exists:
-            last = curr
+        for item in self:
+            last = Value(item)
         return last
 
     def map[R](self, f: Callable[[T], R]) -> Map[T, R]:
         return Map(self, f)
 
-    def next(self) -> Option[T]:
+    def next(self) -> T:
         raise NotImplementedError
 
+    def next_noexcept(self) -> Option[T]:
+        try:
+            return Value(self.next())
+        except StopIteration:
+            return NoValue()
+
     def nth(self, n: int) -> Option[T]:
-        if n < 0:
-            raise ValueError("Nth index must be greater or equal to 0.")
-        for _ in range(n):
-            if not (item := self.next()).exists:
-                return item
-        return self.next()
+        self.advance_by(n)
+        return self.next_noexcept()
 
     def filter(self, f: Callable[[T], bool]) -> Filter[T]:
         return Filter(self, f)
@@ -94,11 +98,8 @@ class Iter[T](IterInterface[T]):
         return Iter(new_copy)
 
     @override
-    def next(self) -> Option[T]:
-        try:
-            return Value(next(self.gen))
-        except StopIteration:
-            return NoValue()
+    def next(self) -> T:
+        return next(self.gen)
 
 
 @final
@@ -118,10 +119,8 @@ class Map[T, R](IterInterface[R]):
         return self.iter.count()
 
     @override
-    def next(self) -> Option[R]:
-        if (item := self.iter.next()).exists:
-            return Value(self.f(item.value))
-        return item
+    def next(self) -> R:
+        return self.f(self.iter.next())
 
 
 @final
@@ -137,11 +136,10 @@ class Filter[T](IterInterface[T]):
         return Filter(self.iter.copy(), self.f)
 
     @override
-    def next(self) -> Option[T]:
-        while (item := self.iter.next()).exists:
-            if self.f(item.value):
+    def next(self) -> T:
+        while True:
+            if self.f(item := self.iter.next()):
                 return item
-        return item
 
 
 @final
@@ -157,19 +155,20 @@ class Cycle[T](IterInterface[T]):
         return Cycle(self.iter.copy())
 
     @override
-    def next(self) -> Option[T]:
-        if (item := self.iter.next()).exists:
-            return item
-        self.iter = self.orig.copy()
-        return self.iter.next()
+    def next(self) -> T:
+        try:
+            return self.iter.next()
+        except StopIteration:
+            self.iter = self.orig.copy()
+            return self.iter.next()
 
 
 @final
 class Enumerate[T](IterInterface[EnumerateItem[T]]):
-    __slots__ = ("curr_item", "iter")
+    __slots__ = ("curr_idx", "iter")
 
     def __init__(self, iter: IterInterface[T]) -> None:
-        self.curr_item = 0
+        self.curr_idx = 0
         self.iter = iter
 
     @override
@@ -181,17 +180,8 @@ class Enumerate[T](IterInterface[EnumerateItem[T]]):
         return self.iter.count()
 
     @override
-    def next(self) -> Option[EnumerateItem[T]]:
-        if (item := self.iter.next()).exists:
-            result = (self.curr_item, item.value)
-            self.curr_item += 1
-            return Value(result)
-        return item
-
-    def __iter__(self) -> Enumerate[T]:
-        return self
-
-    def __next__(self) -> EnumerateItem[T]:
-        if (item := self.next()).exists:
-            return item.value
-        raise StopIteration
+    def next(self) -> EnumerateItem[T]:
+        item = self.iter.next()
+        result = (self.curr_idx, item)
+        self.curr_idx += 1
+        return result

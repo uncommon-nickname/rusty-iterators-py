@@ -22,16 +22,28 @@ class TestIteratorNext:
     def test_next_advances_an_iterator(self, gen: Iterator[int]) -> None:
         it = Iter(gen)
 
-        result = it.next()
-        assert result.exists and result.value == 1
+        assert it.next() == 1
+        assert it.next() == 2
 
-        result = it.next()
-        assert result.exists and result.value == 2
+    def test_next_raises_when_iterator_is_depleted(self, empty_gen: Iterator[int]) -> None:
+        with pytest.raises(StopIteration):
+            Iter(empty_gen).next()
 
-    def test_next_returns_none_when_iterator_is_depleted(self, empty_gen: Iterator[int]) -> None:
-        it = Iter(empty_gen)
 
-        assert it.next().exists is False
+class TestIteratorNextNoexcept:
+    def test_next_advances_an_iterator(self, gen: Iterator[int]) -> None:
+        it = Iter(gen)
+
+        item = it.next_noexcept()
+        assert item.exists and item.value == 1
+
+        item = it.next_noexcept()
+        assert item.exists and item.value == 2
+
+    def test_next_noexcept_raises_when_iterator_is_depleted(self, empty_gen: Iterator[int]) -> None:
+        item = Iter(empty_gen).next_noexcept()
+
+        assert not item.exists
 
 
 class TestIteratorCollect:

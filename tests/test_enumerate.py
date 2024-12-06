@@ -17,5 +17,4 @@ class TestEnumerate:
     def test_enumerate_next(self, gen: Iterator[int]) -> None:
         it = Iter(gen).enumerate()
 
-        item = it.next()
-        assert item.exists and item.value == (0, 1)
+        assert it.next() == (0, 1)
