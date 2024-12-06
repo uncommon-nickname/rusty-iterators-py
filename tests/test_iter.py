@@ -1,4 +1,5 @@
 from typing import Iterator
+from unittest.mock import MagicMock, call
 
 import pytest
 
@@ -138,3 +139,11 @@ class TestIteratorNth:
     def test_negative_index(self, gen: Iterator[int]) -> None:
         with pytest.raises(ValueError):
             Iter(gen).nth(-1)
+
+
+class TestIteratorForEach:
+    def test_for_each(self, gen: Iterator[int]) -> None:
+        mock = MagicMock()
+        Iter(gen).for_each(lambda x: mock(x))
+
+        mock.assert_has_calls((call(1), call(2), call(3), call(4)))

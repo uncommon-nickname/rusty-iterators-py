@@ -45,6 +45,10 @@ class IterInterface[T](Protocol):
     def enumerate(self) -> Enumerate[T]:
         return Enumerate(self)
 
+    def for_each(self, f: Callable[[T], None]) -> None:
+        for item in self:
+            f(item)
+
     def last(self) -> Option[T]:
         last: Option[T] = NoValue()
         for item in self:
