@@ -11,6 +11,13 @@ type EnumerateItem[T] = tuple[int, T]
 
 
 class IterInterface[T](Protocol):
+    """An interface that every iterator should implement.
+
+    Provides a lot of default implementations, that should be correct
+    in most of the custom iterators. Implements an interface allowing
+    for Python iterations and most of the Rust stdlib methods.
+    """
+
     def __iter__(self) -> Self:
         return self
 
@@ -77,6 +84,16 @@ class IterInterface[T](Protocol):
 
 @final
 class Iter[T](IterInterface[T]):
+    """A default iterator wrapper that initializes the iterator chain.
+
+    Implements multiple constructors for maximum QoL. Can be copied only
+    using the provided `.copy()` interface.
+
+    Attributes:
+        gen: A Python stdlib iterator yielding items later used in the
+            iterator chain.
+    """
+
     __slots__ = ("gen",)
 
     def __init__(self, gen: Iterator[T]) -> None:
@@ -108,6 +125,17 @@ class Iter[T](IterInterface[T]):
 
 @final
 class Map[T, R](IterInterface[R]):
+    """A mapping iterator, applying changes to the iterator elements.
+
+    Modifies the elements, but not the size of the iterator itself.
+
+    Attributes:
+        f: A callable taking one argument of type `T` and returning value
+            of type `R` used to modify the iterator elements.
+        iter: The preceding iterator that should be evaluated before the
+            map is applied.
+    """
+
     __slots__ = ("f", "iter")
 
     def __init__(self, iter: IterInterface[T], f: Callable[[T], R]) -> None:
@@ -129,6 +157,17 @@ class Map[T, R](IterInterface[R]):
 
 @final
 class Filter[T](IterInterface[T]):
+    """A filtering iterator, yields only items that fit the requirements.
+
+    Modifies the content of the iterator, not elements themselves.
+
+    Attributes:
+        f: A callable taking one argument of type `T` and returning a
+            boolean informing wether the item is valid.
+        iter: The preceding iterator that should be evaluated before the
+            filter is applied.
+    """
+
     __slots__ = ("f", "iter")
 
     def __init__(self, iter: IterInterface[T], f: Callable[[T], bool]) -> None:
@@ -148,6 +187,15 @@ class Filter[T](IterInterface[T]):
 
 @final
 class Cycle[T](IterInterface[T]):
+    """An infinite cycle iterator, returns to start when depleted.
+
+    Attributes:
+        iter: The preceding iterator that should be depleted before the
+            cycle is repeated.
+        orig: A pointer to the original iterator, used to create copies
+            whenever the `iter` iterator is depleted.
+    """
+
     __slots__ = ("iter", "orig")
 
     def __init__(self, iter: IterInterface[T]) -> None:
@@ -169,6 +217,14 @@ class Cycle[T](IterInterface[T]):
 
 @final
 class Enumerate[T](IterInterface[EnumerateItem[T]]):
+    """An iterator calculating and returning the amount of yielded items.
+
+    Attributes:
+        curr_idx: Keeps track of the amount of yielded items.
+        iter: The preceding iterator that should be evaluated before the
+            enumeration is applied.
+    """
+
     __slots__ = ("curr_idx", "iter")
 
     def __init__(self, iter: IterInterface[T]) -> None:
