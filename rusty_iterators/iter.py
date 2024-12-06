@@ -7,6 +7,7 @@ from typing import Iterator, Protocol, Self, Sequence, final, override
 from .option import NoValue, Value
 
 type Option[T] = Value[T] | NoValue
+type EnumerateItem[T] = tuple[int, T]
 
 
 class IterInterface[T](Protocol):
@@ -36,6 +37,9 @@ class IterInterface[T](Protocol):
 
     def cycle(self) -> Cycle[T]:
         return Cycle(self)
+
+    def enumerate(self) -> Enumerate[T]:
+        return Enumerate(self)
 
     def last(self) -> Option[T]:
         last: Option[T] = NoValue()
@@ -153,7 +157,36 @@ class Cycle[T](IterInterface[T]):
     def next(self) -> Option[T]:
         if (item := self.iter.next()).exists:
             return item
-
         self.iter = self.orig.copy()
-
         return self.iter.next()
+
+
+@final
+class Enumerate[T](IterInterface[EnumerateItem[T]]):
+    def __init__(self, iter: IterInterface[T]) -> None:
+        self.iter = iter
+        self.curr_item = 0
+
+    @override
+    def copy(self) -> Enumerate[T]:
+        return Enumerate(self.iter.copy())
+
+    @override
+    def count(self) -> int:
+        return self.iter.count()
+
+    @override
+    def next(self) -> Option[EnumerateItem[T]]:
+        if (item := self.iter.next()).exists:
+            result = (self.curr_item, item.value)
+            self.curr_item += 1
+            return Value(result)
+        return item
+
+    def __iter__(self) -> Self:
+        return self
+
+    def __next__(self) -> EnumerateItem[T]:
+        if (item := self.next()).exists:
+            return item.value
+        raise StopIteration
