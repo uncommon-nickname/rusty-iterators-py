@@ -71,6 +71,13 @@ class TestIteratorCollect:
         assert result == [None, None, None]
 
 
+class TestIteratorCollectInto:
+    def test_collect_into_tuple(self, gen: Iterator[int]) -> None:
+        result = Iter(gen).collect_into(tuple)
+
+        assert result == (1, 2, 3, 4)
+
+
 class TestIteratorCount:
     def test_count_returns_amount_of_elements(self, gen: Iterator[int]) -> None:
         result = Iter(gen).count()

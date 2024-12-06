@@ -1,12 +1,24 @@
 from __future__ import annotations
 
 import itertools
-from collections.abc import Callable
-from typing import Iterable, Iterator, Protocol, Self, final, override
+from typing import TYPE_CHECKING, Iterable, Iterator, Protocol, Self, final, overload, override
 
 from .maybe import NoValue, Value
 
-type Maybe[T] = Value[T] | NoValue
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
+    type Maybe[T] = Value[T] | NoValue
+
+    type FilterCallable[T] = Callable[[T], bool]
+    type MapCallable[T, R] = Callable[[T], R]
+    type FilterMapCallable[T, R] = Callable[[T], Maybe[R]]
+    type ForEachCallable[T] = Callable[[T], None]
+
+    type StandardIterable[T] = list[T] | tuple[T, ...] | set[T] | frozenset[T]
+    type StandardIterableClass[T] = type[StandardIterable[T]]
+
+# This type is needed in runtime for generic inheritance.
 type EnumerateItem[T] = tuple[int, T]
 
 
@@ -37,6 +49,18 @@ class IterInterface[T](Protocol):
     def collect(self) -> list[T]:
         return [item for item in self]
 
+    @overload
+    def collect_into(self, factory: type[list[T]]) -> list[T]: ...
+    @overload
+    def collect_into(self, factory: type[tuple[T, ...]]) -> tuple[T, ...]: ...
+    @overload
+    def collect_into(self, factory: type[set[T]]) -> set[T]: ...
+    @overload
+    def collect_into(self, factory: type[frozenset[T]]) -> frozenset[T]: ...
+
+    def collect_into(self, factory: StandardIterableClass[T]) -> StandardIterable[T]:
+        return factory(item for item in self)
+
     def copy(self) -> IterInterface[T]:
         raise NotImplementedError
 
@@ -52,7 +76,7 @@ class IterInterface[T](Protocol):
     def enumerate(self) -> Enumerate[T]:
         return Enumerate(self)
 
-    def for_each(self, f: Callable[[T], None]) -> None:
+    def for_each(self, f: ForEachCallable[T]) -> None:
         for item in self:
             f(item)
 
@@ -62,7 +86,7 @@ class IterInterface[T](Protocol):
             last = Value(item)
         return last
 
-    def map[R](self, f: Callable[[T], R]) -> Map[T, R]:
+    def map[R](self, f: MapCallable[T, R]) -> Map[T, R]:
         return Map(self, f)
 
     def next(self) -> T:
@@ -75,11 +99,13 @@ class IterInterface[T](Protocol):
             return NoValue()
 
     def nth(self, n: int) -> Maybe[T]:
-        self.advance_by(n)
-        return self.next_noexcept()
+        return self.advance_by(n).next_noexcept()
 
-    def filter(self, f: Callable[[T], bool]) -> Filter[T]:
+    def filter(self, f: FilterCallable[T]) -> Filter[T]:
         return Filter(self, f)
+
+    def filter_map[R](self, f: FilterMapCallable[T, R]) -> FilterMap[T, R]:
+        return FilterMap(self, f)
 
 
 @final
@@ -138,7 +164,7 @@ class Map[T, R](IterInterface[R]):
 
     __slots__ = ("f", "iter")
 
-    def __init__(self, iter: IterInterface[T], f: Callable[[T], R]) -> None:
+    def __init__(self, iter: IterInterface[T], f: MapCallable[T, R]) -> None:
         self.f = f
         self.iter = iter
 
@@ -170,7 +196,7 @@ class Filter[T](IterInterface[T]):
 
     __slots__ = ("f", "iter")
 
-    def __init__(self, iter: IterInterface[T], f: Callable[[T], bool]) -> None:
+    def __init__(self, iter: IterInterface[T], f: FilterCallable[T]) -> None:
         self.f = f
         self.iter = iter
 
@@ -245,3 +271,32 @@ class Enumerate[T](IterInterface[EnumerateItem[T]]):
         result = (self.curr_idx, item)
         self.curr_idx += 1
         return result
+
+
+@final
+class FilterMap[T, R](IterInterface[R]):
+    """An iterator combining filter and map for simpler interface.
+
+    Attributes:
+        f: A callable taking one argument of type `T` and returning a
+            `Maybe[R]` which is used to deduce if value fits the filter
+            or it should be ignored.
+        iter: The preceding iterator that should be evaluated before the
+            filter map is applied.
+    """
+
+    __slots__ = ("f", "iter")
+
+    def __init__(self, iter: IterInterface[T], f: FilterMapCallable[T, R]) -> None:
+        self.f = f
+        self.iter = iter
+
+    @override
+    def copy(self) -> FilterMap[T, R]:
+        return FilterMap(self.iter.copy(), self.f)
+
+    @override
+    def next(self) -> R:
+        while True:
+            if (item := self.f(self.iter.next())).exists:
+                return item.value
