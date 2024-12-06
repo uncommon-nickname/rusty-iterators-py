@@ -39,7 +39,7 @@ result = Iter(it).filter(lambda x: x % 2 == 0).count()
 it = Iter.from_iterable([1, 2, 3, 4]).filter(lambda x: x % 2 != 0).cycle()
 ```
 
-### Iterate with indices over all even nubers in iterator
+### Iterate with indices over all even numbers in the iterator
 
 ```python
 it = iter(range(10))
