@@ -1,6 +1,6 @@
 # Rusty iterators
 
-Have you ever written a script in Python and wondered why you can't have lightweight, lazy, and easy-to-use iterators just like in Rust? Don't worry, we've got you covered - `rusty-iterators` bring the same interface to Python!"
+Have you ever written a script in Python and wondered why you can't have lightweight, lazy, and easy-to-use iterators just like in Rust? Don't worry, we've got you covered - `rusty-iterators` bring the same interface to Python!
 
 ## Coding code of conduct
 
@@ -12,11 +12,9 @@ We utilize [conventional commits](https://gist.github.com/qoomon/5dfcdf8eec66a05
 
 ## Examples
 
-Here are some quick and easy examples to show the power of lazy iterators!
+Here are some quick and easy examples to show you the power of lazy iterators!
 
 ### Parsing file input
-
-Lazily loading a file to the memory by lines, and parsing each line into the list containing only numeric characters casted into integers.
 
 ```python
 file_handle = open("p.txt", "r")
@@ -26,6 +24,19 @@ result = Iter(file_handle)
         .collect()
 
 file_handle.close()
+```
+
+### Counting all even numbers in the iterator
+
+```python
+it = iter(range(10, 1500))
+result = Iter(it).filter(lambda x: x % 2 == 0).count()
+```
+
+### Create a cycle iterator over all odd numbers in the array
+
+```python
+it = Iter.from_iterable([1, 2, 3, 4]).filter(lambda x: x % 2 != 0).cycle()
 ```
 
 ## Authors
