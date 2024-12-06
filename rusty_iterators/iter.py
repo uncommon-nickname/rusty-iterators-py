@@ -10,6 +10,15 @@ type Option[T] = Value[T] | NoValue
 
 
 class IterInterface[T](Protocol):
+    def advance_by(self, n: int) -> Self:
+        if n < 0:
+            raise ValueError("Amount to advance by must be greater or equal to 0.")
+        for _ in range(n):
+            # We can ignore some iterations if iterator is depleted.
+            if not self.next().exists:
+                break
+        return self
+
     def collect(self) -> list[T]:
         result = []
         while (item := self.next()).exists:
@@ -39,6 +48,15 @@ class IterInterface[T](Protocol):
 
     def next(self) -> Option[T]:
         raise NotImplementedError
+
+    def nth(self, n: int) -> Option[T]:
+        if n < 0:
+            raise ValueError("Nth index must be greater or equal to 0.")
+        for _ in range(n):
+            # We can ignore some iterations if iterator is depleted.
+            if not (item := self.next()).exists:
+                return item
+        return self.next()
 
     def filter(self, f: Callable[[T], bool]) -> Filter[T]:
         return Filter(self, f)

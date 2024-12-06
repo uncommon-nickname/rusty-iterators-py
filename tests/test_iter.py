@@ -1,5 +1,7 @@
 from typing import Iterator
 
+import pytest
+
 from rusty_iterators import Iter
 
 
@@ -87,3 +89,40 @@ class TestIteratorCopy:
 
         assert it_orig.collect() == [1, 2, 3, 4]
         assert it_copy.collect() == [1, 2, 3, 4]
+
+
+class TestIteratorAdvanceBy:
+    def test_advance_by(self, gen: Iterator[int]) -> None:
+        result = Iter(gen).advance_by(2).collect()
+
+        assert result == [3, 4]
+
+    def test_advance_by_depleted_iterator(self, gen: Iterator[int]) -> None:
+        result = Iter(gen).advance_by(5).collect()
+
+        assert result == []
+
+    def test_advance_by_negative_index(self, gen: Iterator[int]) -> None:
+        with pytest.raises(ValueError):
+            Iter(gen).advance_by(-1)
+
+
+class TestIteratorNth:
+    def test_first_element(self, gen: Iterator[int]) -> None:
+        result = Iter(gen).nth(0)
+
+        assert result.exists and result.value == 1
+
+    def test_nth_element(self, gen: Iterator[int]) -> None:
+        result = Iter(gen).nth(3)
+
+        assert result.exists and result.value == 4
+
+    def test_non_existant_element(self, gen: Iterator[int]) -> None:
+        result = Iter(gen).nth(4)
+
+        assert result.exists is False
+
+    def test_negative_index(self, gen: Iterator[int]) -> None:
+        with pytest.raises(ValueError):
+            Iter(gen).nth(-1)
