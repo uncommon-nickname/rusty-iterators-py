@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import itertools
-from typing import TYPE_CHECKING, Iterable, Iterator, Protocol, Self, final, overload, override
+from typing import TYPE_CHECKING, Iterable, Iterator, Optional, Protocol, Self, final, overload, override
 
 from .maybe import NoValue, Value
 
@@ -14,6 +14,7 @@ if TYPE_CHECKING:
     type MapCallable[T, R] = Callable[[T], R]
     type FilterMapCallable[T, R] = Callable[[T], Maybe[R]]
     type ForEachCallable[T] = Callable[[T], None]
+    type InspectCallable[T] = ForEachCallable[T]
 
     type StandardIterable[T] = list[T] | tuple[T, ...] | set[T] | frozenset[T]
     type StandardIterableClass[T] = type[StandardIterable[T]]
@@ -80,6 +81,9 @@ class IterInterface[T](Protocol):
         for item in self:
             f(item)
 
+    def inspect(self, f: Optional[InspectCallable[T]] = None) -> Inspect[T]:
+        return Inspect(self, f)
+
     def last(self) -> Maybe[T]:
         last: Maybe[T] = NoValue()
         for item in self:
@@ -125,6 +129,10 @@ class Iter[T](IterInterface[T]):
     def __init__(self, gen: Iterator[T]) -> None:
         self.gen = gen
 
+    @override
+    def __str__(self) -> str:
+        return f"Iter(id={id(self)})"
+
     @classmethod
     def from_items(cls, *items: T) -> Iter[T]:
         return cls(item for item in items)
@@ -169,6 +177,10 @@ class Map[T, R](IterInterface[R]):
         self.iter = iter
 
     @override
+    def __str__(self) -> str:
+        return f"Map(id={id(self)}, iter={self.iter})"
+
+    @override
     def copy(self) -> Map[T, R]:
         return Map(self.iter.copy(), self.f)
 
@@ -201,6 +213,10 @@ class Filter[T](IterInterface[T]):
         self.iter = iter
 
     @override
+    def __str__(self) -> str:
+        return f"Filter(id={id(self)}, iter={self.iter})"
+
+    @override
     def copy(self) -> Filter[T]:
         return Filter(self.iter.copy(), self.f)
 
@@ -227,6 +243,10 @@ class Cycle[T](IterInterface[T]):
     def __init__(self, iter: IterInterface[T]) -> None:
         self.iter = iter.copy()
         self.orig = iter
+
+    @override
+    def __str__(self) -> str:
+        return f"Cycle(id={id(self)}, iter={self.iter}, orig={self.orig})"
 
     @override
     def copy(self) -> Cycle[T]:
@@ -256,6 +276,10 @@ class Enumerate[T](IterInterface[EnumerateItem[T]]):
     def __init__(self, iter: IterInterface[T]) -> None:
         self.curr_idx = 0
         self.iter = iter
+
+    @override
+    def __str__(self) -> str:
+        return f"Enumerate(id={id(self)}, curr_idx={self.curr_idx}, iter={self.iter})"
 
     @override
     def copy(self) -> Enumerate[T]:
@@ -292,6 +316,10 @@ class FilterMap[T, R](IterInterface[R]):
         self.iter = iter
 
     @override
+    def __str__(self) -> str:
+        return f"FilterMap(id={id(self)}, iter={self.iter})"
+
+    @override
     def copy(self) -> FilterMap[T, R]:
         return FilterMap(self.iter.copy(), self.f)
 
@@ -300,3 +328,40 @@ class FilterMap[T, R](IterInterface[R]):
         while True:
             if (item := self.f(self.iter.next())).exists:
                 return item.value
+
+
+@final
+class Inspect[T](IterInterface[T]):
+    """An iterator allowing user to inject something between other iterators.
+
+    Mainly should be used for debugging, does not implement any iteration
+    skipping logic, to ensure that user has access to items in correct
+    order of execution. If you want to call a function on every element
+    and need perf, use `for_each`.
+
+    Attributes:
+        f: A callable injected into every `next()` call. Should return
+            nothing and shouldn't change the item.
+        iter: The preceding iterator that should be evaluated before the
+            inspect callable is applied.
+    """
+
+    __slots__ = ("f", "iter")
+
+    def __init__(self, iter: IterInterface[T], f: Optional[InspectCallable[T]] = None) -> None:
+        self.f = f or (lambda x: print(f"{self} -> {type(x)} {x}", flush=True))
+        self.iter = iter
+
+    @override
+    def __str__(self) -> str:
+        return f"Inspect(id={id(self)}, on={self.iter.__class__.__name__})"
+
+    @override
+    def copy(self) -> Inspect[T]:
+        return Inspect(self.iter.copy(), self.f)
+
+    @override
+    def next(self) -> T:
+        item = self.iter.next()
+        self.f(item)
+        return item
