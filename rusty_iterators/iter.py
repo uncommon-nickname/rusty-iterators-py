@@ -63,7 +63,7 @@ class Iter[T](IterInterface[T]):
         # and Python interface does not really have a way to copy a
         # stack frame. It is theoretically possible from CPython level,
         # but it is not currently supported from Python interface. As a
-        # workaround we can rebuild both the oryginal and copied
+        # workaround we can rebuild both the original and copied
         # iterators from ground up.
         self.gen, new_copy = itertools.tee(self.gen)
         return Iter(new_copy)
