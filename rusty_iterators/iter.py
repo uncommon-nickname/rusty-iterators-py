@@ -4,9 +4,9 @@ import itertools
 from collections.abc import Callable
 from typing import Iterable, Iterator, Protocol, Self, final, override
 
-from .option import NoValue, Value
+from .maybe import NoValue, Value
 
-type Option[T] = Value[T] | NoValue
+type Maybe[T] = Value[T] | NoValue
 type EnumerateItem[T] = tuple[int, T]
 
 
@@ -56,8 +56,8 @@ class IterInterface[T](Protocol):
         for item in self:
             f(item)
 
-    def last(self) -> Option[T]:
-        last: Option[T] = NoValue()
+    def last(self) -> Maybe[T]:
+        last: Maybe[T] = NoValue()
         for item in self:
             last = Value(item)
         return last
@@ -68,13 +68,13 @@ class IterInterface[T](Protocol):
     def next(self) -> T:
         raise NotImplementedError
 
-    def next_noexcept(self) -> Option[T]:
+    def next_noexcept(self) -> Maybe[T]:
         try:
             return Value(self.next())
         except StopIteration:
             return NoValue()
 
-    def nth(self, n: int) -> Option[T]:
+    def nth(self, n: int) -> Maybe[T]:
         self.advance_by(n)
         return self.next_noexcept()
 
