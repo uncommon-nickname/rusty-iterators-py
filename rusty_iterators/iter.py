@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import itertools
 from collections.abc import Callable
-from typing import Iterator, Protocol, Self, Sequence, final, override
+from typing import Iterable, Iterator, Protocol, Self, final, override
 
 from .option import NoValue, Value
 
@@ -72,11 +72,11 @@ class Iter[T](IterInterface[T]):
         self.gen = gen
 
     @classmethod
-    def from_items(cls, *items: T) -> Self:
+    def from_items(cls, *items: T) -> Iter[T]:
         return cls(item for item in items)
 
     @classmethod
-    def from_iterable(cls, iter: Sequence[T]) -> Self:
+    def from_iterable(cls, iter: Iterable[T]) -> Iter[T]:
         return cls(item for item in iter)
 
     @override
@@ -183,7 +183,7 @@ class Enumerate[T](IterInterface[EnumerateItem[T]]):
             return Value(result)
         return item
 
-    def __iter__(self) -> Self:
+    def __iter__(self) -> Enumerate[T]:
         return self
 
     def __next__(self) -> EnumerateItem[T]:
