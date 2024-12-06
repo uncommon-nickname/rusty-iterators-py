@@ -15,12 +15,14 @@ class IterInterface[T](Protocol):
         if n < 0:
             raise ValueError("Amount to advance by must be greater or equal to 0.")
         for _ in range(n):
-            # We can ignore some iterations if iterator is depleted.
             if not self.next().exists:
                 break
         return self
 
     def collect(self) -> list[T]:
+        # FIXME: <@uncommon-nickname>
+        # Potential perf bottleneck. When appending large number of items
+        # to the array, it will resize and reallocate multiple times.
         result = []
         while (item := self.next()).exists:
             result.append(item.value)
@@ -57,7 +59,6 @@ class IterInterface[T](Protocol):
         if n < 0:
             raise ValueError("Nth index must be greater or equal to 0.")
         for _ in range(n):
-            # We can ignore some iterations if iterator is depleted.
             if not (item := self.next()).exists:
                 return item
         return self.next()
@@ -68,6 +69,8 @@ class IterInterface[T](Protocol):
 
 @final
 class Iter[T](IterInterface[T]):
+    __slots__ = ("gen",)
+
     def __init__(self, gen: Iterator[T]) -> None:
         self.gen = gen
 
@@ -100,21 +103,18 @@ class Iter[T](IterInterface[T]):
 
 @final
 class Map[T, R](IterInterface[R]):
+    __slots__ = ("f", "iter")
+
     def __init__(self, iter: IterInterface[T], f: Callable[[T], R]) -> None:
-        self.iter = iter
         self.f = f
+        self.iter = iter
 
     @override
     def copy(self) -> Map[T, R]:
-        # We can reuse a function pointer, no need to create a copy.
         return Map(self.iter.copy(), self.f)
 
     @override
     def count(self) -> int:
-        # Map doesn't influence the iterator size. We consume the
-        # iterator anyway, so we can avoid unnecessary computation
-        # by skipping the map evaluation and using the underlying
-        # iterator directly.
         return self.iter.count()
 
     @override
@@ -126,13 +126,14 @@ class Map[T, R](IterInterface[R]):
 
 @final
 class Filter[T](IterInterface[T]):
+    __slots__ = ("f", "iter")
+
     def __init__(self, iter: IterInterface[T], f: Callable[[T], bool]) -> None:
-        self.iter = iter
         self.f = f
+        self.iter = iter
 
     @override
     def copy(self) -> Filter[T]:
-        # We can reuse a function pointer, no need to create a copy.
         return Filter(self.iter.copy(), self.f)
 
     @override
@@ -145,9 +146,11 @@ class Filter[T](IterInterface[T]):
 
 @final
 class Cycle[T](IterInterface[T]):
+    __slots__ = ("iter", "orig")
+
     def __init__(self, iter: IterInterface[T]) -> None:
-        self.orig = iter
         self.iter = iter.copy()
+        self.orig = iter
 
     @override
     def copy(self) -> Cycle[T]:
@@ -163,9 +166,11 @@ class Cycle[T](IterInterface[T]):
 
 @final
 class Enumerate[T](IterInterface[EnumerateItem[T]]):
+    __slots__ = ("curr_item", "iter")
+
     def __init__(self, iter: IterInterface[T]) -> None:
-        self.iter = iter
         self.curr_item = 0
+        self.iter = iter
 
     @override
     def copy(self) -> Enumerate[T]:
