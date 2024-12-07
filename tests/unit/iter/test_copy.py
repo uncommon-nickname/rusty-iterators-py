@@ -14,6 +14,7 @@ from rusty_iterators import Iter, IterInterface, Value
         Iter.from_items(1, 2).filter_map(lambda x: Value(x)),
         Iter.from_items(1, 2).inspect(lambda _: None),
         Iter.from_items(1, 2).step_by(2),
+        Iter.from_items(1).chain(Iter.from_items(2)),
     ),
 )
 def test_copy(it: IterInterface[int]) -> None:

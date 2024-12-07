@@ -14,6 +14,7 @@ from rusty_iterators import Iter, IterInterface, Value
         (Iter.from_items(1, 2, 3, 4).filter_map(lambda x: Value(x)).advance_by(2), [3, 4]),
         (Iter.from_items(1, 2, 3, 4).inspect(lambda _: None).advance_by(2), [3, 4]),
         (Iter.from_items(1, 2, 3, 4).step_by(2).advance_by(1), [3]),
+        (Iter.from_items(1, 2).chain(Iter.from_items(3, 4)).advance_by(1), [2, 3, 4]),
     ),
 )
 def test_advance_by(it: IterInterface[int], expected: list[int]) -> None:
@@ -32,6 +33,7 @@ def test_advance_by(it: IterInterface[int], expected: list[int]) -> None:
         Iter.from_items().filter_map(lambda x: Value(x)).advance_by(2),
         Iter.from_items().inspect(lambda _: None).advance_by(2),
         Iter.from_items().step_by(2).advance_by(2),
+        Iter.from_items().chain(Iter.from_items()).advance_by(2),
     ),
 )
 def test_advance_by_depleted(it: IterInterface[int]) -> None:
@@ -50,6 +52,7 @@ def test_advance_by_depleted(it: IterInterface[int]) -> None:
         Iter.from_items().filter_map(lambda x: Value(x)),
         Iter.from_items().inspect(lambda _: None),
         Iter.from_items().step_by(2),
+        Iter.from_items().chain(Iter.from_items()),
     ),
 )
 def test_advance_by_negative_idx(it: IterInterface[int]) -> None:

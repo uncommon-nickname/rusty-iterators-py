@@ -49,6 +49,9 @@ class IterInterface[T](Protocol):
                 break
         return self
 
+    def chain(self, other: IterInterface[T]) -> Chain[T]:
+        return Chain(self, other)
+
     def collect(self) -> list[T]:
         return [item for item in self]
 
@@ -410,3 +413,43 @@ class StepBy[T](IterInterface[T]):
             self.first_take = False
 
         return self.iter.next()
+
+
+@final
+class Chain[T](IterInterface[T]):
+    """An iterator allowing user to chain two iterators.
+
+    Depletes a first iterator and then depletes the second.
+
+    Attributes:
+        first: The preceding iterator that should be evaluated before the
+            next iterator is used.
+        second: A second iterator used when first one is depleted.
+        use_seconds: A flag used to determine which iterator should be
+            used when `next()` is called.
+    """
+
+    __slots__ = ("first", "second", "use_second")
+
+    def __init__(self, first: IterInterface[T], second: IterInterface[T]) -> None:
+        self.first = first
+        self.second = second
+        self.use_second = False
+
+    @override
+    def __str__(self) -> str:
+        return f"Chain(id={id(self)}, first={self.first}, second={self.second})"
+
+    @override
+    def copy(self) -> Chain[T]:
+        return Chain(self.first.copy(), self.second.copy())
+
+    @override
+    def next(self) -> T:
+        if self.use_second:
+            return self.second.next()
+        try:
+            return self.first.next()
+        except StopIteration:
+            self.use_second = True
+            return self.second.next()
