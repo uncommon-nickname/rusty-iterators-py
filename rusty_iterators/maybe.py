@@ -1,6 +1,9 @@
 from __future__ import annotations
 
-from typing import Literal
+from typing import TYPE_CHECKING, Literal
+
+if TYPE_CHECKING:
+    type Maybe[T] = Value[T] | NoValue
 
 
 class Value[T]:

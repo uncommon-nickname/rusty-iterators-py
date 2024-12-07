@@ -1,6 +1,6 @@
 # Rusty iterators
 
-Have you ever written a script in Python and wondered why you can't have lightweight, lazy, and easy-to-use iterators just like in Rust? Don't worry, we've got you covered - `rusty-iterators` bring the same interface to Python!
+Have you ever written a script in Python and wondered why you can't have lightweight, lazy, and easy-to-use iterators just like in Rust? Don't worry, we've got you covered - `rusty-iterators` bring the same interface to Python! And all of that with modern, strong static typing!
 
 ## Coding code of conduct
 
@@ -33,13 +33,13 @@ it = iter(range(10, 1500))
 result = Iter(it).filter(lambda x: x % 2 == 0).count()
 ```
 
-### Create a cycle iterator over all odd numbers in the array
+### Creating a cycle iterator over all odd numbers in the array
 
 ```python
 it = Iter.from_iterable([1, 2, 3, 4]).filter(lambda x: x % 2 != 0).cycle()
 ```
 
-### Iterate with indices over all even numbers in the iterator
+### Iterating with indices over all even numbers in the iterator
 
 ```python
 it = iter(range(10))

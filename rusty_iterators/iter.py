@@ -8,7 +8,7 @@ from .maybe import NoValue, Value
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-    type Maybe[T] = Value[T] | NoValue
+    from .maybe import Maybe
 
     type FilterCallable[T] = Callable[[T], bool]
     type MapCallable[T, R] = Callable[[T], R]
@@ -30,6 +30,8 @@ class IterInterface[T](Protocol):
     in most of the custom iterators. Implements an interface allowing
     for Python iterations and most of the Rust stdlib methods.
     """
+
+    __slots__ = ()
 
     def __iter__(self) -> Self:
         return self
