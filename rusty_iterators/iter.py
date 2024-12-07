@@ -98,14 +98,11 @@ class IterInterface[T](Protocol):
     def next(self) -> T:
         raise NotImplementedError
 
-    def next_noexcept(self) -> Maybe[T]:
+    def nth(self, n: int) -> Maybe[T]:
         try:
-            return Value(self.next())
+            return Value(self.advance_by(n).next())
         except StopIteration:
             return NoValue()
-
-    def nth(self, n: int) -> Maybe[T]:
-        return self.advance_by(n).next_noexcept()
 
     def filter(self, f: FilterCallable[T]) -> Filter[T]:
         return Filter(self, f)
