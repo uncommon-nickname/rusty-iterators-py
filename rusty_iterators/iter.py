@@ -79,6 +79,12 @@ class IterInterface[T](Protocol):
     def enumerate(self) -> Enumerate[T]:
         return Enumerate(self)
 
+    def filter(self, f: FilterCallable[T]) -> Filter[T]:
+        return Filter(self, f)
+
+    def filter_map[R](self, f: FilterMapCallable[T, R]) -> FilterMap[T, R]:
+        return FilterMap(self, f)
+
     def for_each(self, f: ForEachCallable[T]) -> None:
         for item in self:
             f(item)
@@ -104,11 +110,8 @@ class IterInterface[T](Protocol):
         except StopIteration:
             return NoValue()
 
-    def filter(self, f: FilterCallable[T]) -> Filter[T]:
-        return Filter(self, f)
-
-    def filter_map[R](self, f: FilterMapCallable[T, R]) -> FilterMap[T, R]:
-        return FilterMap(self, f)
+    def step_by(self, step_size: int) -> StepBy[T]:
+        return StepBy(self, step_size)
 
 
 @final
@@ -364,3 +367,46 @@ class Inspect[T](IterInterface[T]):
         item = self.iter.next()
         self.f(item)
         return item
+
+
+@final
+class StepBy[T](IterInterface[T]):
+    """An iterator allowing user to take every nth item.
+
+    Always starts by returning the first item of the preceding iterator.
+
+    Attributes:
+        first_take: A boolean indicating if initial element was already
+            taken out of the underlying iterator.
+        iter: The preceding iterator that should be evaluated before the
+            step is calculated.
+        step_minus_one: Amount of items that we have to skip to get the
+            correct item in the next call.
+    """
+
+    __slots__ = ("first_take", "iter", "step_minus_one")
+
+    def __init__(self, iter: IterInterface[T], step_size: int) -> None:
+        if step_size <= 0:
+            raise ValueError("Step size has to be greater than 0.")
+        self.first_take = True
+        self.iter = iter
+        self.step_minus_one = step_size - 1
+
+    @override
+    def __str__(self) -> str:
+        return f"StepBy(id={id(self)}, step_size={self.step_minus_one + 1}, iter={self.iter})"
+
+    @override
+    def copy(self) -> StepBy[T]:
+        return StepBy(self.iter.copy(), self.step_minus_one)
+
+    @override
+    def next(self) -> T:
+        if not self.first_take:
+            for _ in range(self.step_minus_one):
+                self.iter.next()
+        else:
+            self.first_take = False
+
+        return self.iter.next()

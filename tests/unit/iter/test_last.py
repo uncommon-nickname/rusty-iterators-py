@@ -12,6 +12,7 @@ from rusty_iterators import Iter, IterInterface, NoValue, Value
         (Iter.from_items(1, 2, 3, 4).enumerate(), (3, 4)),
         (Iter.from_items(1, 2, 3, 4).filter_map(lambda x: Value(x**2) if x % 2 == 0 else NoValue()), 16),
         (Iter.from_items(1, 2, 3, 4).inspect(lambda _: None), 4),
+        (Iter.from_items(1, 2, 3, 4).step_by(2), 3),
     ),
 )
 def test_last(it: IterInterface[int], expected: int) -> None:
@@ -28,6 +29,7 @@ def test_last(it: IterInterface[int], expected: int) -> None:
         Iter.from_items().enumerate(),
         Iter.from_items().filter_map(lambda x: Value(x**2) if x % 2 == 0 else NoValue()),
         Iter.from_items().inspect(lambda _: None),
+        Iter.from_items().step_by(2),
     ),
 )
 def test_last_on_empty_iter(it: IterInterface[int]) -> None:
