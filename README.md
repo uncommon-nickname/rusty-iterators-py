@@ -19,8 +19,8 @@ Here are some quick and easy examples to show you the power of lazy iterators!
 ```python
 file_handle = open("p.txt", "r")
 
-result = Iter(file_handle)
-        .map(lambda l: Iter(c for c in l).filter(lambda c: c.isnumeric()).map(lambda c: int(c)).collect())
+result = RustyIter.from_iterator(file_handle)
+        .map(lambda l: RustyIter.from_iterator(c for c in l).filter(lambda c: c.isnumeric()).map(lambda c: int(c)).collect())
         .collect()
 
 file_handle.close()
@@ -30,20 +30,14 @@ file_handle.close()
 
 ```python
 it = iter(range(10, 1500))
-result = Iter(it).filter(lambda x: x % 2 == 0).count()
-```
-
-### Creating a cycle iterator over all odd numbers in the array
-
-```python
-it = Iter.from_iterable([1, 2, 3, 4]).filter(lambda x: x % 2 != 0).cycle()
+result = RustyIter.from_iterator(it).filter(lambda x: x % 2 == 0).count()
 ```
 
 ### Iterating with indices over all even numbers in the iterator
 
 ```python
 it = iter(range(10))
-for idx, value in Iter(it).filter(lambda x: x % 2 == 0).enumerate():
+for idx, value in RustyIter.from_iterator(it).filter(lambda x: x % 2 == 0).enumerate():
         print(idx, value)
 ```
 

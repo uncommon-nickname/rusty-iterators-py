@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Literal
+from typing import Literal
 
-if TYPE_CHECKING:
-    type Maybe[T] = Value[T] | NoValue
+type Maybe[T] = Value[T] | NoValue
 
 
 class Value[T]:

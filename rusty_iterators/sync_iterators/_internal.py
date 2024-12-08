@@ -1,14 +1,11 @@
 from __future__ import annotations
 
-import itertools
-from typing import TYPE_CHECKING, Iterable, Iterator, Optional, Protocol, Self, final, overload, override
+from typing import TYPE_CHECKING, Optional, Protocol, Self, final, overload, override
 
-from .maybe import NoValue, Value
+from rusty_iterators.maybe import Maybe, NoValue, Value
 
 if TYPE_CHECKING:
     from collections.abc import Callable
-
-    from .maybe import Maybe
 
     type FilterCallable[T] = Callable[[T], bool]
     type MapCallable[T, R] = Callable[[T], R]
@@ -67,17 +64,11 @@ class IterInterface[T](Protocol):
     def collect_into(self, factory: StandardIterableClass[T]) -> StandardIterable[T]:
         return factory(item for item in self)
 
-    def copy(self) -> IterInterface[T]:
-        raise NotImplementedError
-
     def count(self) -> int:
         ctr = 0
         for _ in self:
             ctr += 1
         return ctr
-
-    def cycle(self) -> Cycle[T]:
-        return Cycle(self)
 
     def enumerate(self) -> Enumerate[T]:
         return Enumerate(self)
@@ -121,51 +112,6 @@ class IterInterface[T](Protocol):
 
 
 @final
-class Iter[T](IterInterface[T]):
-    """A default iterator wrapper that initializes the iterator chain.
-
-    Implements multiple constructors for maximum QoL. Can be copied only
-    using the provided `.copy()` interface.
-
-    Attributes:
-        gen: A Python stdlib iterator yielding items later used in the
-            iterator chain.
-    """
-
-    __slots__ = ("gen",)
-
-    def __init__(self, gen: Iterator[T]) -> None:
-        self.gen = gen
-
-    @override
-    def __str__(self) -> str:
-        return f"Iter(id={id(self)})"
-
-    @classmethod
-    def from_items(cls, *items: T) -> Iter[T]:
-        return cls(item for item in items)
-
-    @classmethod
-    def from_iterable(cls, iter: Iterable[T]) -> Iter[T]:
-        return cls(item for item in iter)
-
-    @override
-    def copy(self) -> Iter[T]:
-        # Generators in python are a simple wrappers around stack frames
-        # and Python interface does not really have a way to copy a
-        # stack frame. It is theoretically possible from CPython level,
-        # but it is not currently supported from Python interface. As a
-        # workaround we can rebuild both the original and copied
-        # iterators from ground up.
-        self.gen, new_copy = itertools.tee(self.gen)
-        return Iter(new_copy)
-
-    @override
-    def next(self) -> T:
-        return next(self.gen)
-
-
-@final
 class Map[T, R](IterInterface[R]):
     """A mapping iterator, applying changes to the iterator elements.
 
@@ -187,10 +133,6 @@ class Map[T, R](IterInterface[R]):
     @override
     def __str__(self) -> str:
         return f"Map(id={id(self)}, iter={self.iter})"
-
-    @override
-    def copy(self) -> Map[T, R]:
-        return Map(self.iter.copy(), self.f)
 
     @override
     def count(self) -> int:
@@ -225,50 +167,10 @@ class Filter[T](IterInterface[T]):
         return f"Filter(id={id(self)}, iter={self.iter})"
 
     @override
-    def copy(self) -> Filter[T]:
-        return Filter(self.iter.copy(), self.f)
-
-    @override
     def next(self) -> T:
         while True:
             if self.f(item := self.iter.next()):
                 return item
-
-
-@final
-class Cycle[T](IterInterface[T]):
-    """An infinite cycle iterator, returns to start when depleted.
-
-    Attributes:
-        iter: The preceding iterator that should be depleted before the
-            cycle is repeated.
-        orig: A pointer to the original iterator, used to create copies
-            whenever the `iter` iterator is depleted.
-    """
-
-    __slots__ = ("iter", "orig")
-
-    def __init__(self, iter: IterInterface[T]) -> None:
-        self.iter = iter.copy()
-        self.orig = iter
-
-    @override
-    def __str__(self) -> str:
-        return f"Cycle(id={id(self)}, iter={self.iter}, orig={self.orig})"
-
-    @override
-    def copy(self) -> Cycle[T]:
-        it = Cycle(self.iter.copy())
-        it.orig = self.orig.copy()
-        return it
-
-    @override
-    def next(self) -> T:
-        try:
-            return self.iter.next()
-        except StopIteration:
-            self.iter = self.orig.copy()
-            return self.iter.next()
 
 
 @final
@@ -290,12 +192,6 @@ class Enumerate[T](IterInterface[EnumerateItem[T]]):
     @override
     def __str__(self) -> str:
         return f"Enumerate(id={id(self)}, curr_idx={self.curr_idx}, iter={self.iter})"
-
-    @override
-    def copy(self) -> Enumerate[T]:
-        it = Enumerate(self.iter.copy())
-        it.curr_idx = self.curr_idx
-        return it
 
     @override
     def count(self) -> int:
@@ -332,10 +228,6 @@ class FilterMap[T, R](IterInterface[R]):
         return f"FilterMap(id={id(self)}, iter={self.iter})"
 
     @override
-    def copy(self) -> FilterMap[T, R]:
-        return FilterMap(self.iter.copy(), self.f)
-
-    @override
     def next(self) -> R:
         while True:
             if (item := self.f(self.iter.next())).exists:
@@ -367,10 +259,6 @@ class Inspect[T](IterInterface[T]):
     @override
     def __str__(self) -> str:
         return f"Inspect(id={id(self)}, on={self.iter})"
-
-    @override
-    def copy(self) -> Inspect[T]:
-        return Inspect(self.iter.copy(), self.f)
 
     @override
     def next(self) -> T:
@@ -409,12 +297,6 @@ class StepBy[T](IterInterface[T]):
         return f"StepBy(id={id(self)}, step_size={self.step_minus_one + 1}, iter={self.iter})"
 
     @override
-    def copy(self) -> StepBy[T]:
-        it = StepBy(self.iter.copy(), self.step_minus_one + 1)
-        it.first_take = self.first_take
-        return it
-
-    @override
     def next(self) -> T:
         if not self.first_take:
             for _ in range(self.step_minus_one):
@@ -451,12 +333,6 @@ class Chain[T](IterInterface[T]):
         return f"Chain(id={id(self)}, first={self.first}, second={self.second})"
 
     @override
-    def copy(self) -> Chain[T]:
-        it = Chain(self.first.copy(), self.second.copy())
-        it.use_second = self.use_second
-        return it
-
-    @override
     def next(self) -> T:
         if self.use_second:
             return self.second.next()
@@ -491,12 +367,6 @@ class Take[T](IterInterface[T]):
     @override
     def __str__(self) -> str:
         return f"Take(id={id(self)}, size={self.size}, taken={self.taken}, iter={self.iter})"
-
-    @override
-    def copy(self) -> Take[T]:
-        it = Take(self.iter.copy(), self.size)
-        it.taken = self.taken
-        return it
 
     @override
     def next(self) -> T:
