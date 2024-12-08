@@ -116,6 +116,9 @@ class IterInterface[T](Protocol):
     def step_by(self, step_size: int) -> StepBy[T]:
         return StepBy(self, step_size)
 
+    def take(self, size: int) -> Take[T]:
+        return Take(self, size)
+
 
 @final
 class Iter[T](IterInterface[T]):
@@ -255,7 +258,9 @@ class Cycle[T](IterInterface[T]):
 
     @override
     def copy(self) -> Cycle[T]:
-        return Cycle(self.iter.copy())
+        it = Cycle(self.iter.copy())
+        it.orig = self.orig.copy()
+        return it
 
     @override
     def next(self) -> T:
@@ -288,7 +293,9 @@ class Enumerate[T](IterInterface[EnumerateItem[T]]):
 
     @override
     def copy(self) -> Enumerate[T]:
-        return Enumerate(self.iter.copy())
+        it = Enumerate(self.iter.copy())
+        it.curr_idx = self.curr_idx
+        return it
 
     @override
     def count(self) -> int:
@@ -359,7 +366,7 @@ class Inspect[T](IterInterface[T]):
 
     @override
     def __str__(self) -> str:
-        return f"Inspect(id={id(self)}, on={self.iter.__class__.__name__})"
+        return f"Inspect(id={id(self)}, on={self.iter})"
 
     @override
     def copy(self) -> Inspect[T]:
@@ -392,6 +399,7 @@ class StepBy[T](IterInterface[T]):
     def __init__(self, iter: IterInterface[T], step_size: int) -> None:
         if step_size <= 0:
             raise ValueError("Step size has to be greater than 0.")
+
         self.first_take = True
         self.iter = iter
         self.step_minus_one = step_size - 1
@@ -402,7 +410,9 @@ class StepBy[T](IterInterface[T]):
 
     @override
     def copy(self) -> StepBy[T]:
-        return StepBy(self.iter.copy(), self.step_minus_one)
+        it = StepBy(self.iter.copy(), self.step_minus_one + 1)
+        it.first_take = self.first_take
+        return it
 
     @override
     def next(self) -> T:
@@ -425,7 +435,7 @@ class Chain[T](IterInterface[T]):
         first: The preceding iterator that should be evaluated before the
             next iterator is used.
         second: A second iterator used when first one is depleted.
-        use_seconds: A flag used to determine which iterator should be
+        use_second: A flag used to determine which iterator should be
             used when `next()` is called.
     """
 
@@ -442,7 +452,9 @@ class Chain[T](IterInterface[T]):
 
     @override
     def copy(self) -> Chain[T]:
-        return Chain(self.first.copy(), self.second.copy())
+        it = Chain(self.first.copy(), self.second.copy())
+        it.use_second = self.use_second
+        return it
 
     @override
     def next(self) -> T:
@@ -453,3 +465,43 @@ class Chain[T](IterInterface[T]):
         except StopIteration:
             self.use_second = True
             return self.second.next()
+
+
+@final
+class Take[T](IterInterface[T]):
+    """An iterator allowing user to limit iterator size.
+
+    Returns items from preceding iterator until the limit is hit.
+
+    Attributes:
+        iter: The preceding iterator that should be evaluated before the
+            take iterator is depleted.
+        size: An amount of elements that will be taken out of the preceding
+            iterator before end.
+        take: An amount of items that were already consumed.
+    """
+
+    __slots__ = ("iter", "size", "taken")
+
+    def __init__(self, iter: IterInterface[T], size: int) -> None:
+        self.iter = iter
+        self.size = size
+        self.taken = 0
+
+    @override
+    def __str__(self) -> str:
+        return f"Take(id={id(self)}, size={self.size}, taken={self.taken}, iter={self.iter})"
+
+    @override
+    def copy(self) -> Take[T]:
+        it = Take(self.iter.copy(), self.size)
+        it.taken = self.taken
+        return it
+
+    @override
+    def next(self) -> T:
+        if self.taken == self.size:
+            raise StopIteration
+        item = self.iter.next()
+        self.taken += 1
+        return item

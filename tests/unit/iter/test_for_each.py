@@ -16,6 +16,7 @@ from rusty_iterators import Iter, IterInterface, NoValue, Value
         (Iter.from_items(1, 2, 3, 4).inspect(lambda _: None), [1, 2, 3, 4]),
         (Iter.from_items(1, 2, 3, 4).step_by(2), [1, 3]),
         (Iter.from_items(1, 2).chain(Iter.from_items(3, 4)), [1, 2, 3, 4]),
+        (Iter.from_items(1, 2).cycle().take(4), [1, 2, 1, 2]),
     ),
 )
 def test_for_each(it: IterInterface[int], expected: list[int]) -> None:

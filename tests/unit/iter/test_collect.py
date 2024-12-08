@@ -14,6 +14,7 @@ from rusty_iterators import Iter, IterInterface, NoValue, Value
         (Iter.from_items(1, 2, 3, 4).inspect(lambda _: None), [1, 2, 3, 4]),
         (Iter.from_items(1, 2, 3, 4).step_by(2), [1, 3]),
         (Iter.from_items(1, 2).chain(Iter.from_items(3, 4)), [1, 2, 3, 4]),
+        (Iter.from_items(1, 2).cycle().take(4), [1, 2, 1, 2]),
     ),
 )
 def test_collect_iterator(it: IterInterface[int], expected: list[int]) -> None:
@@ -31,6 +32,7 @@ def test_collect_iterator(it: IterInterface[int], expected: list[int]) -> None:
         Iter.from_items().inspect(lambda _: None),
         Iter.from_items().step_by(2),
         Iter.from_items().chain(Iter.from_items()),
+        Iter.from_items().take(2),
     ),
 )
 def test_collect_empty_iterator(it: IterInterface[int]) -> None:
@@ -48,6 +50,7 @@ def test_collect_empty_iterator(it: IterInterface[int]) -> None:
         (Iter.from_items(1, 2, 3, 4).inspect(lambda _: None), {1, 2, 3, 4}),
         (Iter.from_items(1, 2, 3, 4).step_by(2), {1, 3}),
         (Iter.from_items(1, 2).chain(Iter.from_items(3, 4)), {1, 2, 3, 4}),
+        (Iter.from_items(1, 2).cycle().take(4), {1, 2}),
     ),
 )
 def test_collect_into_set(it: IterInterface[int], expected: set[int]) -> None:

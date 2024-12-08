@@ -14,6 +14,7 @@ from rusty_iterators import Iter, IterInterface, NoValue, Value
         (Iter.from_items(1, 2, 3, 4).inspect(lambda _: None), 4),
         (Iter.from_items(1, 2, 3, 4).step_by(2), 2),
         (Iter.from_items(1, 2).chain(Iter.from_items(3, 4)), 4),
+        (Iter.from_items(1, 2, 3, 4).cycle().take(2), 2),
     ),
 )
 def test_count(it: IterInterface[int], expected: int) -> None:
@@ -31,6 +32,7 @@ def test_count(it: IterInterface[int], expected: int) -> None:
         Iter.from_items().inspect(lambda _: None),
         Iter.from_items().step_by(2),
         Iter.from_items().chain(Iter.from_items()),
+        Iter.from_items().take(2),
     ),
 )
 def test_count_empty_iterator(it: IterInterface[int]) -> None:
