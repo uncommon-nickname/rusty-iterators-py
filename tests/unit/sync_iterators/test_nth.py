@@ -18,8 +18,7 @@ from rusty_iterators import IterInterface, NoValue, RustyIter, Value
     ),
 )
 def test_nth(it: IterInterface[int], expected: int) -> None:
-    item = it.nth(0)
-    assert item.exists and item.value == expected
+    assert it.nth(0) == expected
 
 
 @pytest.mark.parametrize(
@@ -37,5 +36,5 @@ def test_nth(it: IterInterface[int], expected: int) -> None:
     ),
 )
 def test_nth_empty_iterator(it: IterInterface[int]) -> None:
-    item = it.nth(0)
-    assert not item.exists
+    with pytest.raises(StopIteration):
+        it.nth(0)

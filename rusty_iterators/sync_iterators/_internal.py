@@ -2,8 +2,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Optional, Protocol, Self, final, overload, override
 
-from rusty_iterators.maybe import Maybe, NoValue, Value
-
 if TYPE_CHECKING:
     from ._types import (
         FilterCallable,
@@ -97,10 +95,10 @@ class IterInterface[T](Protocol):
     def inspect(self, f: Optional[InspectCallable[T]] = None) -> Inspect[T]:
         return Inspect(self, f)
 
-    def last(self) -> Maybe[T]:
-        last: Maybe[T] = NoValue()
+    def last(self) -> T:
+        last = self.next()
         for item in self:
-            last = Value(item)
+            last = item
         return last
 
     def map[R](self, f: MapCallable[T, R]) -> Map[T, R]:
@@ -109,11 +107,8 @@ class IterInterface[T](Protocol):
     def next(self) -> T:
         raise NotImplementedError
 
-    def nth(self, n: int) -> Maybe[T]:
-        try:
-            return Value(self.advance_by(n).next())
-        except StopIteration:
-            return NoValue()
+    def nth(self, n: int) -> T:
+        return self.advance_by(n).next()
 
     def step_by(self, step_size: int) -> StepBy[T]:
         return StepBy(self, step_size)
@@ -138,12 +133,13 @@ class CycleCached[T](IterInterface[T]):
             Initialized by the first element - `0`.
     """
 
-    __slots__ = ("cache", "it", "ptr")
+    __slots__ = ("cache", "it", "ptr", "use_cache")
 
     def __init__(self, it: IterInterface[T]) -> None:
         self.cache: list[T] = []
         self.it = it
         self.ptr = 0
+        self.use_cache = False
 
     @override
     def __str__(self) -> str:
@@ -162,25 +158,18 @@ class CycleCached[T](IterInterface[T]):
 
     @override
     def next(self) -> T:
+        if self.use_cache:
+            self.ptr = self.ptr % len(self.cache)
+            item = self.cache[self.ptr]
+            self.ptr += 1
+            return item
         try:
             item = self.it.next()
             self.cache.append(item)
             return item
         except StopIteration:
-            pass
-        try:
-            return self._get_item_from_cache()
-        except IndexError as exc:
-            raise StopIteration from exc
-
-    def _get_item_from_cache(self) -> T:
-        try:
-            item = self.cache[self.ptr]
-            self.ptr += 1
-            return item
-        except IndexError:
-            self.ptr = 1
-            return self.cache[self.ptr - 1]
+            self.use_cache = True
+            return self.next()
 
 
 @final
@@ -269,7 +258,7 @@ class Chain[T](IterInterface[T]):
             return self.first.next()
         except StopIteration:
             self.use_second = True
-            return self.second.next()
+            return self.next()
 
 
 @final
