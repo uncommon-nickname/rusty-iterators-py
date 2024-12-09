@@ -1,30 +1,29 @@
-from typing import Iterator
-
 from rusty_iterators import RustyIter
 
 
-def gen() -> Iterator[int]:
-    while True:
-        yield 1
-
-
 def test_take_on_an_infinite_iterator() -> None:
-    it = RustyIter.from_iterator(gen()).take(10)
+    it = RustyIter.from_items(1, 2, 3).cycle().take(10)
 
-    assert it.collect() == [1] * 10
+    assert it.collect() == [1, 2, 3, 1, 2, 3, 1, 2, 3, 1]
 
 
 def test_enumerate_on_infinite_iterator() -> None:
-    it = RustyIter.from_iterator(gen()).enumerate().advance_by(10_000)
+    it = RustyIter.from_items(1, 2, 3).cycle().enumerate().advance_by(10_000)
 
-    assert it.next() == (10_000, 1)
-    assert it.next() == (10_001, 1)
+    assert it.next() == (10_000, 2)
+    assert it.next() == (10_001, 3)
 
 
 def test_step_by_correctly_skips_chain_iterator() -> None:
     it = RustyIter.from_items(1, 2, 3, 4, 5).chain(RustyIter.from_items(6, 7, 8, 9, 10)).step_by(2)
 
     assert it.collect() == [1, 3, 5, 7, 9]
+
+
+def test_multiple_cycles() -> None:
+    it = RustyIter.from_items(1, 2, 3).cycle().cycle().cycle()
+
+    assert [it.next() for _ in range(5)] == [1, 2, 3, 1, 2]
 
 
 def test_multiple_chains() -> None:

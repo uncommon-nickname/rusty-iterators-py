@@ -18,8 +18,7 @@ from rusty_iterators import IterInterface, NoValue, RustyIter, Value
     ),
 )
 def test_last(it: IterInterface[int], expected: int) -> None:
-    item = it.last()
-    assert item.exists and item.value == expected
+    assert it.last() == expected
 
 
 @pytest.mark.parametrize(
@@ -37,5 +36,5 @@ def test_last(it: IterInterface[int], expected: int) -> None:
     ),
 )
 def test_last_on_empty_iter(it: IterInterface[int]) -> None:
-    item = it.last()
-    assert not item.exists
+    with pytest.raises(StopIteration):
+        it.last()
