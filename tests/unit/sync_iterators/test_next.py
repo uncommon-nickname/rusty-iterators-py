@@ -15,6 +15,7 @@ from rusty_iterators import IterInterface, NoValue, RustyIter, Value
         (RustyIter.from_items(1, 2).step_by(2), 1),
         (RustyIter[int].from_items().chain(RustyIter.from_items(3, 4)), 3),
         (RustyIter.from_items(1, 2, 3).take(2), 1),
+        (RustyIter.from_items(1, 2, 3).cycle(), 1),
     ),
 )
 def test_next(it: IterInterface[int], expected: int) -> None:
@@ -33,6 +34,7 @@ def test_next(it: IterInterface[int], expected: int) -> None:
         RustyIter.from_items().step_by(2),
         RustyIter.from_items().chain(RustyIter.from_items()),
         RustyIter.from_items().take(2),
+        RustyIter.from_items().cycle(),
     ),
 )
 def test_next_on_empty_iterator(it: IterInterface[int]) -> None:

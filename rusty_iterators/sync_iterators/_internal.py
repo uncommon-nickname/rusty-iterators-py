@@ -397,7 +397,7 @@ class Inspect[T](IterInterface[T]):
     __slots__ = ("f", "it")
 
     def __init__(self, it: IterInterface[T], f: Optional[InspectCallable[T]] = None) -> None:
-        self.f = f or (lambda x: print(f"{self} -> {type(x)} {x}", flush=True))
+        self.f = f or (lambda x: print(f"{self} -> {type(x)}: {x}", flush=True))
         self.it = it
 
     @override

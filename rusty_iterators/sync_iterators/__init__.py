@@ -2,11 +2,37 @@ from __future__ import annotations
 
 from typing import Iterator, Sequence, final, override
 
-from rusty_iterators.exceptions import IterNotCopiable
+from rusty_iterators.exceptions import IterNotCopiableError
 
-from ._internal import IterInterface
+from ._internal import (
+    Chain,
+    CycleCached,
+    CycleCopy,
+    Enumerate,
+    Filter,
+    FilterMap,
+    Inspect,
+    IterInterface,
+    Map,
+    StepBy,
+    Take,
+)
 
-__all__ = ("IterWrapper", "RustyIter", "SeqWrapper")
+__all__ = (
+    "Chain",
+    "CycleCached",
+    "CycleCopy",
+    "Enumerate",
+    "Filter",
+    "FilterMap",
+    "Inspect",
+    "IterWrapper",
+    "Map",
+    "RustyIter",
+    "SeqWrapper",
+    "StepBy",
+    "Take",
+)
 
 
 class RustyIter[T]:
@@ -61,7 +87,7 @@ class IterWrapper[T](IterInterface[T]):
 
     @override
     def copy(self) -> IterWrapper[T]:
-        raise IterNotCopiable(
+        raise IterNotCopiableError(
             "Iterator containing a python generator cannot be copied.\n"
             "Python generators can't be trivially copied, if you really need to create a copy,"
             " you should collect the generator into a Sequence and create a RustyIter from it."

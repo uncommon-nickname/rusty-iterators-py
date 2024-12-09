@@ -1,2 +1,2 @@
-class IterNotCopiable(BaseException):
+class IterNotCopiableError(BaseException):
     pass
