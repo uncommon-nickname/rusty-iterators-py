@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import Iterator, Sequence, final, override
 
+from rusty_iterators.exceptions import IterNotCopiable
+
 from ._internal import IterInterface
 
 __all__ = ("IterWrapper", "RustyIter", "SeqWrapper")
@@ -19,11 +21,11 @@ class RustyIter[T]:
     __slots__ = ()
 
     @classmethod
-    def from_iterator(cls, it: Iterator[T]) -> IterWrapper[T]:
+    def from_it(cls, it: Iterator[T]) -> IterWrapper[T]:
         return IterWrapper(it)
 
     @classmethod
-    def from_sequence(cls, s: Sequence[T]) -> SeqWrapper[T]:
+    def from_seq(cls, s: Sequence[T]) -> SeqWrapper[T]:
         return SeqWrapper(s)
 
     @classmethod
@@ -38,6 +40,10 @@ class IterWrapper[T](IterInterface[T]):
     This type cannot be copied, because it doesn't make sense. All
     copy-related optimizations should keep in mind that this type can
     be a parent of the iterator tree. Some kind of cache is required.
+
+    Attributes:
+        it: A python iterator that is going to be used to retrieve the
+            elements when `.next()` is called.
     """
 
     __slots__ = ("it",)
@@ -47,7 +53,19 @@ class IterWrapper[T](IterInterface[T]):
 
     @override
     def __str__(self) -> str:
-        return f"IterWrapper(id={id(self)}, it={self.it})"
+        return f"IterWrapper(it={self.it})"
+
+    @override
+    def can_be_copied(self) -> bool:
+        return False
+
+    @override
+    def copy(self) -> IterWrapper[T]:
+        raise IterNotCopiable(
+            "Iterator containing a python generator cannot be copied.\n"
+            "Python generators can't be trivially copied, if you really need to create a copy,"
+            " you should collect the generator into a Sequence and create a RustyIter from it."
+        )
 
     @override
     def next(self) -> T:
@@ -62,6 +80,12 @@ class SeqWrapper[T](IterInterface[T]):
     way I can optimize the use of other iterators that require restarts.
     When copied it is important to remember that the same buffer will
     be reused, so items in the buffer should not be modified.
+
+    Attributes:
+        ptr: A pointer to the passed sequence that is going to be used
+            to retrieve elements when `.next()` is called.
+        s: A reference to the original sequence, from which the iterator
+            is going to retrieve elements.
     """
 
     __slots__ = ("ptr", "s")
@@ -72,7 +96,17 @@ class SeqWrapper[T](IterInterface[T]):
 
     @override
     def __str__(self) -> str:
-        return f"SeqWrapper(id={id(self)}, ptr={self.ptr})"
+        return f"SeqWrapper(ptr={self.ptr}, s={len(self.s)})"
+
+    @override
+    def can_be_copied(self) -> bool:
+        return True
+
+    @override
+    def copy(self) -> SeqWrapper[T]:
+        obj = SeqWrapper(self.s)
+        obj.ptr = self.ptr
+        return obj
 
     @override
     def next(self) -> T:

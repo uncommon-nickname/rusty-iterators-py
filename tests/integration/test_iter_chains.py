@@ -9,13 +9,13 @@ def gen() -> Iterator[int]:
 
 
 def test_take_on_an_infinite_iterator() -> None:
-    it = RustyIter.from_iterator(gen()).take(10)
+    it = RustyIter.from_it(gen()).take(10)
 
     assert it.collect() == [1] * 10
 
 
 def test_enumerate_on_infinite_iterator() -> None:
-    it = RustyIter.from_iterator(gen()).enumerate().advance_by(10_000)
+    it = RustyIter.from_it(gen()).enumerate().advance_by(10_000)
 
     assert it.next() == (10_000, 1)
     assert it.next() == (10_001, 1)

@@ -1,0 +1,2 @@
+class IterNotCopiable(BaseException):
+    pass
