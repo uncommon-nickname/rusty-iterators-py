@@ -37,6 +37,28 @@ class RustyIter[T]:
 
 
 @final
+class AIterWrapper[T](AIterInterface[T]):
+    """Iterator wrapper keeping a pointer to the async iterator object.
+
+    Attributes:
+        ait: An asynchronous iterator object.
+    """
+
+    __slots__ = ("ait",)
+
+    def __init__(self, ait: AsyncIterator[T]) -> None:
+        self.ait = ait
+
+    @override
+    def __str__(self) -> str:
+        return f"AIterWrapper(ait={self.ait})"
+
+    @override
+    async def anext(self) -> T:
+        return await anext(self.ait)
+
+
+@final
 class IterWrapper[T](IterInterface[T]):
     """Iterator wrapper keeping a pointer to the python iterator object.
 
@@ -73,22 +95,6 @@ class IterWrapper[T](IterInterface[T]):
     @override
     def next(self) -> T:
         return next(self.it)
-
-
-@final
-class AIterWrapper[T](AIterInterface[T]):
-    __slots__ = ("ait",)
-
-    def __init__(self, ait: AsyncIterator[T]) -> None:
-        self.ait = ait
-
-    @override
-    def __str__(self) -> str:
-        return f"AIterWrapper(ait={self.ait})"
-
-    @override
-    async def anext(self) -> T:
-        return await anext(self.ait)
 
 
 @final

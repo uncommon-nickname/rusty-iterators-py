@@ -41,6 +41,17 @@ class AIterInterface[T](Protocol):
 
 @final
 class AIter[T](AIterInterface[T]):
+    """An iterator serving as a proxy between a sync and async iterator.
+
+    Convers a sync iterator interface into an async iterator interface.
+
+    Attributes:
+        it: A synchronous iterator that is used to retrieve items, before
+            they are passed to the async interface.
+    """
+
+    __slots__ = ("it",)
+
     def __init__(self, it: IterInterface[T]) -> None:
         self.it = it
 
@@ -58,6 +69,16 @@ class AIter[T](AIterInterface[T]):
 
 @final
 class AMap[T, R](AIterInterface[R]):
+    """An async mapping iterator applying async callable to every element.
+
+    Modifies the elements, may be blocking when `anext()` is called.
+
+    Attributes:
+        af: An asynchronous callable used to modify the iterator item.
+        ait: An asynchronous iterator that should be evaluated to retrieve
+            the item that is going to be modified.
+    """
+
     __slots__ = ("af", "ait")
 
     def __init__(self, ait: AIterInterface[T], af: AMapCallable[T, R]) -> None:
