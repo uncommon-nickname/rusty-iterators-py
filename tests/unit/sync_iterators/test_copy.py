@@ -1,7 +1,7 @@
 import pytest
 
 from rusty_iterators import IterInterface, NoValue, RustyIter, Value
-from rusty_iterators.sync_iterators import CycleCached, CycleCopy
+from rusty_iterators.iterators._sync import CycleCached, CycleCopy
 
 
 @pytest.mark.parametrize(
@@ -10,7 +10,7 @@ from rusty_iterators.sync_iterators import CycleCached, CycleCopy
         RustyIter.from_items(1, 2, 3).filter(lambda x: x > 1),
         RustyIter.from_items(1, 2, 3).map(lambda x: x**2),
         RustyIter.from_items(1, 2, 3).filter_map(lambda x: Value(x**2) if x > 1 else NoValue()),
-        RustyIter.from_items(1, 2, 3).inspect(),
+        RustyIter.from_items(1, 2, 3).inspect(lambda _: None),
     ),
 )
 def test_trivially_copiable_iterators(it: IterInterface[int]) -> None:

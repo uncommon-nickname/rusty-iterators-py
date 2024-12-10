@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Optional, Protocol, Self, final, overload, override
 
+from ._async import AIter
+
 if TYPE_CHECKING:
     from ._types import (
         FilterCallable,
@@ -45,6 +47,9 @@ class IterInterface[T](Protocol):
             except StopIteration:
                 break
         return self
+
+    def as_async(self) -> AIter[T]:
+        return AIter(self)
 
     def can_be_copied(self) -> bool:
         raise NotImplementedError
