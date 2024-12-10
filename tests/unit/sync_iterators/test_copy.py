@@ -1,7 +1,7 @@
 import pytest
 
 from rusty_iterators import IterInterface, NoValue, RustyIter, Value
-from rusty_iterators.sync_iterators import CycleCached, CycleCopy
+from rusty_iterators.iterators._sync import CycleCached, CycleCopy
 
 
 @pytest.mark.parametrize(

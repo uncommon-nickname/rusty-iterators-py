@@ -1,6 +1,5 @@
 from .exceptions import IterNotCopiableError
+from .iterators import AIterInterface, IterInterface, RustyIter
 from .maybe import Maybe, NoValue, Value
-from .sync_iterators import RustyIter
-from .sync_iterators._internal import IterInterface
 
-__all__ = ("IterInterface", "IterNotCopiableError", "Maybe", "NoValue", "RustyIter", "Value")
+__all__ = ("AIterInterface", "IterInterface", "IterNotCopiableError", "Maybe", "NoValue", "RustyIter", "Value")

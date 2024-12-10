@@ -1,5 +1,5 @@
 from rusty_iterators import RustyIter
-from rusty_iterators.sync_iterators import CycleCached, CycleCopy
+from rusty_iterators.iterators._sync import CycleCached, CycleCopy
 
 
 def test_copiable_iterator_returns_copy_based_cycle() -> None:

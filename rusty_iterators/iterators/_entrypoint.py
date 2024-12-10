@@ -1,38 +1,11 @@
 from __future__ import annotations
 
-from typing import Iterator, Sequence, final, override
+from typing import AsyncIterator, Iterator, Sequence, final, override
 
 from rusty_iterators.exceptions import IterNotCopiableError
 
-from ._internal import (
-    Chain,
-    CycleCached,
-    CycleCopy,
-    Enumerate,
-    Filter,
-    FilterMap,
-    Inspect,
-    IterInterface,
-    Map,
-    StepBy,
-    Take,
-)
-
-__all__ = (
-    "Chain",
-    "CycleCached",
-    "CycleCopy",
-    "Enumerate",
-    "Filter",
-    "FilterMap",
-    "Inspect",
-    "IterWrapper",
-    "Map",
-    "RustyIter",
-    "SeqWrapper",
-    "StepBy",
-    "Take",
-)
+from ._async import AIterInterface
+from ._sync import IterInterface
 
 
 class RustyIter[T]:
@@ -49,6 +22,10 @@ class RustyIter[T]:
     @classmethod
     def from_it(cls, it: Iterator[T]) -> IterWrapper[T]:
         return IterWrapper(it)
+
+    @classmethod
+    def from_ait(cls, ait: AsyncIterator[T]) -> AIterWrapper[T]:
+        return AIterWrapper(ait)
 
     @classmethod
     def from_seq(cls, s: Sequence[T]) -> SeqWrapper[T]:
@@ -96,6 +73,22 @@ class IterWrapper[T](IterInterface[T]):
     @override
     def next(self) -> T:
         return next(self.it)
+
+
+@final
+class AIterWrapper[T](AIterInterface[T]):
+    __slots__ = ("ait",)
+
+    def __init__(self, ait: AsyncIterator[T]) -> None:
+        self.ait = ait
+
+    @override
+    def __str__(self) -> str:
+        return f"AIterWrapper(ait={self.ait})"
+
+    @override
+    async def anext(self) -> T:
+        return await anext(self.ait)
 
 
 @final
