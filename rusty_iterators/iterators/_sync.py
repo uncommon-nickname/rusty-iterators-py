@@ -159,6 +159,7 @@ class CycleCached[T](IterInterface[T]):
         obj = CycleCached(self.it.copy())
         obj.cache = self.cache
         obj.ptr = self.ptr
+        obj.use_cache = self.use_cache
         return obj
 
     @override
