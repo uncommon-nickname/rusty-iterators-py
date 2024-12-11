@@ -44,6 +44,16 @@ def test_copy_cycle_cached() -> None:
     assert [copy.next() for _ in range(5)] == [2, 3, 1, 2, 3]
 
 
+# Added after resolving bug with incorrect copy of `use_cache` attribute (issue #22).
+def test_copy_cycle_cached_after_full_round() -> None:
+    it = CycleCached(RustyIter.from_items(1, 2, 3))
+    it.advance_by(4)
+    copy = it.copy()
+
+    assert [it.next() for _ in range(5)] == [2, 3, 1, 2, 3]
+    assert [copy.next() for _ in range(5)] == [2, 3, 1, 2, 3]
+
+
 def test_copy_chain() -> None:
     it = RustyIter.from_items(1, 2, 3).chain(RustyIter.from_items(4, 5, 6))
     it.next()
