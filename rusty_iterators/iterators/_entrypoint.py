@@ -62,10 +62,6 @@ class AIterWrapper[T](AIterInterface[T]):
 class IterWrapper[T](IterInterface[T]):
     """Iterator wrapper keeping a pointer to the python iterator object.
 
-    This type cannot be copied, because it doesn't make sense. All
-    copy-related optimizations should keep in mind that this type can
-    be a parent of the iterator tree. Some kind of cache is required.
-
     Attributes:
         it: A python iterator that is going to be used to retrieve the
             elements when `.next()` is called.
@@ -82,10 +78,15 @@ class IterWrapper[T](IterInterface[T]):
 
     @override
     def can_be_copied(self) -> bool:
+        if isinstance(self.it, IterInterface):
+            return self.it.can_be_copied()
         return False
 
     @override
     def copy(self) -> IterWrapper[T]:
+        if isinstance(self.it, IterInterface):
+            return IterWrapper(self.it.copy())
+
         raise IterNotCopiableError(
             "Iterator containing a python generator cannot be copied.\n"
             "Python generators can't be trivially copied, if you really need to create a copy,"

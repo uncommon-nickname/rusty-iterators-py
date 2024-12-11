@@ -1,13 +1,14 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Protocol, Self, final, override
+from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING, Self, final, override
 
 if TYPE_CHECKING:
     from ._sync import IterInterface
     from ._types import AMapCallable
 
 
-class AIterInterface[T](Protocol):
+class AIterInterface[T](ABC):
     """An interface that every async iterator should implement.
 
     This is a proof of concept, not a final API!
@@ -29,14 +30,15 @@ class AIterInterface[T](Protocol):
     def __repr__(self) -> str:
         return self.__str__()
 
+    @abstractmethod
+    async def anext(self) -> T:
+        raise NotImplementedError
+
     async def acollect(self) -> list[T]:
         return [item async for item in self]
 
     def amap[R](self, af: AMapCallable[T, R]) -> AMap[T, R]:
         return AMap(self, af)
-
-    async def anext(self) -> T:
-        raise NotImplementedError
 
 
 @final
