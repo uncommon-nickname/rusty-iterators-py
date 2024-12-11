@@ -1,7 +1,32 @@
 import pytest
 
-from rusty_iterators import IterInterface, NoValue, RustyIter, Value
+from rusty_iterators import IterInterface, IterNotCopiableError, NoValue, RustyIter, Value
 from rusty_iterators.iterators._sync import CycleCached, CycleCopy
+
+
+@pytest.mark.parametrize("it", (RustyIter.from_seq([1, 2, 3]), RustyIter.from_items(1, 2, 3)))
+def test_sequence_iter_is_copiable(it: IterInterface[int]) -> None:
+    assert it.can_be_copied()
+    it.copy()
+
+
+def test_it_iter_is_not_copiable() -> None:
+    it = RustyIter.from_it(x for x in [1, 2, 3])
+
+    assert not it.can_be_copied()
+
+    with pytest.raises(IterNotCopiableError):
+        it.copy()
+
+
+# Added after resolving bug with false negative during iterator wrapper
+# copying (issue #21).
+def test_it_iter_is_copiable_if_wraps_rusty_iter() -> None:
+    it1 = RustyIter.from_items(1, 2, 3)
+    it2 = RustyIter.from_it(it1)
+
+    assert it2.can_be_copied()
+    it2.copy()
 
 
 @pytest.mark.parametrize(

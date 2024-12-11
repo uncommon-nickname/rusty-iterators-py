@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional, Protocol, Self, final, overload, override
+from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING, Optional, Self, final, overload, override
 
 from ._async import AIter
 
@@ -18,7 +19,7 @@ if TYPE_CHECKING:
 type EnumerateItem[T] = tuple[int, T]
 
 
-class IterInterface[T](Protocol):
+class IterInterface[T](ABC):
     """An interface that every iterator should implement.
 
     Provides a lot of default implementations, that should be correct
@@ -38,6 +39,18 @@ class IterInterface[T](Protocol):
     def __repr__(self) -> str:
         return self.__str__()
 
+    @abstractmethod
+    def can_be_copied(self) -> bool:
+        raise NotImplementedError
+
+    @abstractmethod
+    def copy(self) -> IterInterface[T]:
+        raise NotImplementedError
+
+    @abstractmethod
+    def next(self) -> T:
+        raise NotImplementedError
+
     def advance_by(self, n: int) -> Self:
         if n < 0:
             raise ValueError("Amount to advance by must be greater or equal to 0.")
@@ -50,9 +63,6 @@ class IterInterface[T](Protocol):
 
     def as_async(self) -> AIter[T]:
         return AIter(self)
-
-    def can_be_copied(self) -> bool:
-        raise NotImplementedError
 
     def chain(self, other: IterInterface[T]) -> Chain[T]:
         return Chain(self, other)
@@ -71,9 +81,6 @@ class IterInterface[T](Protocol):
 
     def collect_into(self, factory: StandardIterableClass[T]) -> StandardIterable[T]:
         return factory(item for item in self)
-
-    def copy(self) -> IterInterface[T]:
-        raise NotImplementedError
 
     def count(self) -> int:
         ctr = 0
@@ -108,9 +115,6 @@ class IterInterface[T](Protocol):
 
     def map[R](self, f: MapCallable[T, R]) -> Map[T, R]:
         return Map(self, f)
-
-    def next(self) -> T:
-        raise NotImplementedError
 
     def nth(self, n: int) -> T:
         return self.advance_by(n).next()
