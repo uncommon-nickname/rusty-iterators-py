@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Optional, Self, final, overload, override
 
 from ._async import AIter
+from ._shared import CopyIterInterface
 
 if TYPE_CHECKING:
     from ._types import (
@@ -19,7 +20,7 @@ if TYPE_CHECKING:
 type EnumerateItem[T] = tuple[int, T]
 
 
-class IterInterface[T](ABC):
+class IterInterface[T](CopyIterInterface, ABC):
     """An interface that every iterator should implement.
 
     Provides a lot of default implementations, that should be correct
@@ -38,14 +39,6 @@ class IterInterface[T](ABC):
     @override
     def __repr__(self) -> str:
         return self.__str__()
-
-    @abstractmethod
-    def can_be_copied(self) -> bool:
-        raise NotImplementedError
-
-    @abstractmethod
-    def copy(self) -> IterInterface[T]:
-        raise NotImplementedError
 
     @abstractmethod
     def next(self) -> T:

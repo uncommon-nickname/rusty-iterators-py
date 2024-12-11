@@ -3,12 +3,14 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Self, final, override
 
+from ._shared import CopyIterInterface
+
 if TYPE_CHECKING:
     from ._sync import IterInterface
     from ._types import AMapCallable
 
 
-class AIterInterface[T](ABC):
+class AIterInterface[T](CopyIterInterface, ABC):
     """An interface that every async iterator should implement.
 
     This is a proof of concept, not a final API!
@@ -68,6 +70,14 @@ class AIter[T](AIterInterface[T]):
         except StopIteration as exc:
             raise StopAsyncIteration from exc
 
+    @override
+    def can_be_copied(self) -> bool:
+        return self.it.can_be_copied()
+
+    @override
+    def copy(self) -> AIter[T]:
+        return AIter(self.it.copy())
+
 
 @final
 class AMap[T, R](AIterInterface[R]):
@@ -94,3 +104,11 @@ class AMap[T, R](AIterInterface[R]):
     @override
     async def anext(self) -> R:
         return await self.af(await self.ait.anext())
+
+    @override
+    def can_be_copied(self) -> bool:
+        return self.ait.can_be_copied()
+
+    @override
+    def copy(self) -> AMap[T, R]:
+        return AMap(self.ait.copy(), self.af)
