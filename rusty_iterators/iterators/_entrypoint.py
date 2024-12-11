@@ -57,6 +57,23 @@ class AIterWrapper[T](AIterInterface[T]):
     async def anext(self) -> T:
         return await anext(self.ait)
 
+    @override
+    def can_be_copied(self) -> bool:
+        if isinstance(self.ait, AIterInterface):
+            return self.ait.can_be_copied()
+        return False
+
+    @override
+    def copy(self) -> AIterWrapper[T]:
+        if isinstance(self.ait, AIterInterface):
+            return AIterWrapper(self.ait.copy())
+
+        raise IterNotCopiableError(
+            "Async iterator containing a python async generator cannot be copied.\n"
+            "Python generators can't be trivially copied, if you really need to create a copy, "
+            "you should collect the generator into a Sequence and create a RustyIter from it."
+        )
+
 
 @final
 class IterWrapper[T](IterInterface[T]):
@@ -89,8 +106,8 @@ class IterWrapper[T](IterInterface[T]):
 
         raise IterNotCopiableError(
             "Iterator containing a python generator cannot be copied.\n"
-            "Python generators can't be trivially copied, if you really need to create a copy,"
-            " you should collect the generator into a Sequence and create a RustyIter from it."
+            "Python generators can't be trivially copied, if you really need to create a copy, "
+            "you should collect the generator into a Sequence and create a RustyIter from it."
         )
 
     @override
