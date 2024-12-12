@@ -124,6 +124,13 @@ class IterInterface[T](CopyIterInterface, ABC):
     def take(self, size: int) -> Take[T]:
         return Take(self, size)
 
+    def try_sum(self) -> T:
+        summed = self.next()
+        for item in self:
+            # I don't know how to statically ensure that this will work.
+            summed += item  # type: ignore[operator]
+        return summed
+
     def windows(self, size: int) -> Windows[T]:
         return Windows(self, size)
 
