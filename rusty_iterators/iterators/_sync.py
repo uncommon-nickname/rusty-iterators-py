@@ -118,6 +118,9 @@ class IterInterface[T](CopyIterInterface, ABC):
     def take(self, size: int) -> Take[T]:
         return Take(self, size)
 
+    def windows(self, size: int) -> Windows[T]:
+        return Windows(self, size)
+
 
 @final
 class CycleCached[T](IterInterface[T]):
@@ -554,3 +557,63 @@ class Take[T](IterInterface[T]):
         item = self.it.next()
         self.taken += 1
         return item
+
+
+@final
+class Windows[T](IterInterface[list[T]]):
+    """An iterator returning windows of n element size.
+
+    Attributes:
+        it: An original iterator that will be consumed to create windows.
+        cache: A circular buffer cache, used to store elements returned
+            by the future windows.
+        size: A size of the window.
+        ptr: A current position in the cache.
+    """
+
+    __slots__ = ("cache", "it", "ptr", "size")
+
+    def __init__(self, it: IterInterface[T], size: int) -> None:
+        self.it = it
+        self.size = size
+        self.cache: list[T] = []
+        self.ptr = 0
+
+    @override
+    def __str__(self) -> str:
+        return f"Windows(size={self.size}, cache={self.cache}, it={self.it})"
+
+    @override
+    def can_be_copied(self) -> bool:
+        return self.it.can_be_copied()
+
+    @override
+    def copy(self) -> Windows[T]:
+        obj = Windows(self.it.copy(), self.size)
+        obj.cache = self.cache[::]
+        obj.ptr = self.ptr
+        return obj
+
+    @override
+    def count(self) -> int:
+        # Windows always return the original count without the last
+        # element. We can skip running more costly `.next()`.
+        return max(0, self.it.count() - 1)
+
+    @override
+    def next(self) -> list[T]:
+        if len(self.cache) == self.size:
+            self.ptr = self.ptr % self.size
+            self.cache[self.ptr] = self.it.next()
+            self.ptr += 1
+
+            result = []
+            for _ in range(self.size):
+                self.ptr = self.ptr % self.size
+                result.append(self.cache[self.ptr])
+                self.ptr += 1
+            return result
+
+        for _ in range(self.size):
+            self.cache.append(self.it.next())
+        return self.cache[::]

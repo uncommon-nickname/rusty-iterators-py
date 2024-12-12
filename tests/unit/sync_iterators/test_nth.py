@@ -16,6 +16,7 @@ from rusty_iterators import IterInterface, NoValue, RustyIter, Value
         (RustyIter[int].from_items().chain(RustyIter.from_items(1, 2)), 1),
         (RustyIter.from_items(1, 2, 3, 4).take(2), 1),
         (RustyIter.from_items(1, 2).cycle(), 1),
+        (RustyIter.from_items(1, 2, 3).windows(2), [1, 2]),
     ),
 )
 def test_nth(it: IterInterface[int], expected: int) -> None:
@@ -35,6 +36,7 @@ def test_nth(it: IterInterface[int], expected: int) -> None:
         RustyIter.from_items().chain(RustyIter.from_items()),
         RustyIter.from_items().take(2),
         RustyIter.from_items().cycle(),
+        RustyIter.from_items().windows(2),
     ),
 )
 def test_nth_empty_iterator(it: IterInterface[int]) -> None:
