@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import AsyncIterator, Iterator, Sequence, final, override
+from collections.abc import AsyncIterator, Iterator, Sequence
+from typing import final, override
 
 from rusty_iterators.exceptions import IterNotCopiableError
 

@@ -7,7 +7,7 @@ from ._shared import CopyIterInterface
 
 if TYPE_CHECKING:
     from ._sync import IterInterface
-    from ._types import AMapCallable
+    from ._types import AMapCallable, MapCallable
 
 
 class AIterInterface[T](CopyIterInterface, ABC):
@@ -41,6 +41,9 @@ class AIterInterface[T](CopyIterInterface, ABC):
 
     def amap[R](self, af: AMapCallable[T, R]) -> AMap[T, R]:
         return AMap(self, af)
+
+    def map[R](self, f: MapCallable[T, R]) -> Map[T, R]:
+        return Map(self, f)
 
 
 @final
@@ -112,3 +115,39 @@ class AMap[T, R](AIterInterface[R]):
     @override
     def copy(self) -> AMap[T, R]:
         return AMap(self.ait.copy(), self.af)
+
+
+@final
+class Map[T, R](AIterInterface[R]):
+    """A mapping iterator, applying changes to the iterator elements.
+
+    Modifies the elements, but not the size of the iterator itself.
+
+    Attributes:
+        f: A callable taking one argument of type `T` and returning value
+            of type `R` used to modify the iterator elements.
+        ait: The preceding async iterator that should be evaluated before
+            the map is applied.
+    """
+
+    __slots__ = ("ait", "f")
+
+    def __init__(self, ait: AIterInterface[T], f: MapCallable[T, R]) -> None:
+        self.ait = ait
+        self.f = f
+
+    @override
+    def __str__(self) -> str:
+        return f"Map(ait={self.ait})"
+
+    @override
+    async def anext(self) -> R:
+        return self.f(await self.ait.anext())
+
+    @override
+    def can_be_copied(self) -> bool:
+        return self.ait.can_be_copied()
+
+    @override
+    def copy(self) -> Map[T, R]:
+        return Map(self.ait.copy(), self.f)
