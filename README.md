@@ -22,17 +22,34 @@ result = RustyIter.from_it(iter(range(10, 1500)))
         .count()
 ```
 
+### Check if iterator is incremental
+
+```python
+result = RustyIter.from_items(1, 2, 3, 6, 5)
+        .windows(2)
+        .map(lambda arr: arr[0] <= arr[1])
+        .all()
+```
+
 ### Iterate with indices over all even numbers in the iterator
 
 ```python
-for idx, value in RustyIter.from_it(iter(range(10))).filter(lambda x: x % 2 == 0).enumerate():
+it = RustyIter.from_it(iter(range(10)))
+        .filter(lambda x: x % 2 == 0)
+        .enumerate()
+
+for idx, value in it:
         print(idx, value)
 ```
 
 ### Get `n` items from cycle iterator
 
 ```python
-result = RustyIter.from_items(1, 2, 3, 4).map(lambda x: x**2).cycle().take(30).collect()
+result = RustyIter.from_items(1, 2, 3, 4)
+        .map(lambda x: x**2)
+        .cycle()
+        .take(30)
+        .collect()
 ```
 
 ### Parse file line by line
@@ -63,7 +80,10 @@ tasks = RustyIter.from_items(1, 2, 3)
         .map(lambda crt: asyncio.create_task(crt))
         .collect_into(tuple)
 
-results = await RustyIter.from_seq(tasks).as_async().amap(wait_for_task).acollect()
+results = await RustyIter.from_seq(tasks)
+        .as_async()
+        .amap(wait_for_task)
+        .acollect()
 ```
 
 ## Authors

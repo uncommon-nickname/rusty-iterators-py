@@ -54,6 +54,12 @@ class IterInterface[T](CopyIterInterface, ABC):
                 break
         return self
 
+    def all(self) -> bool:
+        return all(self)
+
+    def any(self) -> bool:
+        return any(self)
+
     def as_async(self) -> AIter[T]:
         return AIter(self)
 
@@ -61,7 +67,7 @@ class IterInterface[T](CopyIterInterface, ABC):
         return Chain(self, other)
 
     def collect(self) -> list[T]:
-        return [item for item in self]
+        return list(self)
 
     @overload
     def collect_into(self, factory: type[list[T]]) -> list[T]: ...
@@ -73,7 +79,7 @@ class IterInterface[T](CopyIterInterface, ABC):
     def collect_into(self, factory: type[frozenset[T]]) -> frozenset[T]: ...
 
     def collect_into(self, factory: StandardIterableClass[T]) -> StandardIterable[T]:
-        return factory(item for item in self)
+        return factory(self)
 
     def count(self) -> int:
         ctr = 0
