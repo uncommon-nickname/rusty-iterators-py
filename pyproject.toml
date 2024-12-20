@@ -2,7 +2,7 @@
 name = "rusty-iterators"
 version = "0.1.0"
 description = "Rust-like iterators in Python."
-authors = ["Wiktor Nowak <wnowak2f@gmail.com>"]
+authors = ["Wiktor Nowak <@uncommon-nickname>"]
 readme = "README.md"
 license = "MIT"
 
