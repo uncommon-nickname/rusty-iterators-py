@@ -122,6 +122,11 @@ class IterInterface[T](CopyIterInterface, ABC):
         return StepBy(self, step_size)
 
     def sum(self) -> T:
+        # NOTE: 22.12.2024 <@uncommon-nickname>
+        # The way mypy evaluates the types disallows type narrowing
+        # that would be different for methods of generic class. I don't
+        # have a good idea to design this, so for now we will crash in
+        # runtime.
         return self.fold(self.next(), lambda acc, x: acc + x)  # type: ignore[operator]
 
     def take(self, size: int) -> Take[T]:
