@@ -12,6 +12,7 @@ type MapCallable[T, R] = Callable[[T], R]
 type FilterMapCallable[T, R] = Callable[[T], Maybe[R]]
 type ForEachCallable[T] = Callable[[T], None]
 type InspectCallable[T] = ForEachCallable[T]
+type FoldCallable[B, T] = Callable[[B, T], B]
 
 type AMapCallable[T, R] = Callable[[T], Awaitable[R]]
 
