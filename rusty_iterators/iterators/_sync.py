@@ -8,6 +8,8 @@ from ._shared import CopyIterInterface
 
 if TYPE_CHECKING:
     from ._types import (
+        AllCallable,
+        AnyCallable,
         FilterCallable,
         FilterMapCallable,
         FoldCallable,
@@ -55,10 +57,14 @@ class IterInterface[T](CopyIterInterface, ABC):
                 break
         return self
 
-    def all(self) -> bool:
+    def all(self, f: Optional[AllCallable[T]] = None) -> bool:
+        if f:
+            return all(f(item) for item in self)
         return all(self)
 
-    def any(self) -> bool:
+    def any(self, f: Optional[AnyCallable[T]] = None) -> bool:
+        if f:
+            return any(f(item) for item in self)
         return any(self)
 
     def as_async(self) -> AIter[T]:
@@ -417,7 +423,7 @@ class Inspect[T](IterInterface[T]):
     __slots__ = ("f", "it")
 
     def __init__(self, it: IterInterface[T], f: Optional[InspectCallable[T]] = None) -> None:
-        self.f = f or (lambda x: print(f"{self} -> {type(x)}: {x}", flush=True))
+        self.f = f or (lambda x: print(f"{self}: {x}"))
         self.it = it
 
     @override
