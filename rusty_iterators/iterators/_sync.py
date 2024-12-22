@@ -10,6 +10,7 @@ if TYPE_CHECKING:
     from ._types import (
         FilterCallable,
         FilterMapCallable,
+        FoldCallable,
         ForEachCallable,
         InspectCallable,
         MapCallable,
@@ -82,10 +83,7 @@ class IterInterface[T](CopyIterInterface, ABC):
         return factory(self)
 
     def count(self) -> int:
-        ctr = 0
-        for _ in self:
-            ctr += 1
-        return ctr
+        return self.fold(0, lambda acc, _: acc + 1)
 
     def cycle(self) -> CycleCached[T] | CycleCopy[T]:
         return CycleCopy(self) if self.can_be_copied() else CycleCached(self)
@@ -99,6 +97,11 @@ class IterInterface[T](CopyIterInterface, ABC):
     def filter_map[R](self, f: FilterMapCallable[T, R]) -> FilterMap[T, R]:
         return FilterMap(self, f)
 
+    def fold[B](self, init: B, f: FoldCallable[B, T]) -> B:
+        for item in self:
+            init = f(init, item)
+        return init
+
     def for_each(self, f: ForEachCallable[T]) -> None:
         for item in self:
             f(item)
@@ -107,10 +110,7 @@ class IterInterface[T](CopyIterInterface, ABC):
         return Inspect(self, f)
 
     def last(self) -> T:
-        last = self.next()
-        for item in self:
-            last = item
-        return last
+        return self.fold(self.next(), lambda _, x: x)
 
     def map[R](self, f: MapCallable[T, R]) -> Map[T, R]:
         return Map(self, f)
@@ -121,14 +121,11 @@ class IterInterface[T](CopyIterInterface, ABC):
     def step_by(self, step_size: int) -> StepBy[T]:
         return StepBy(self, step_size)
 
+    def sum(self) -> T:
+        return self.fold(self.next(), lambda acc, x: acc + x)  # type: ignore[operator]
+
     def take(self, size: int) -> Take[T]:
         return Take(self, size)
-
-    def sum(self) -> T:
-        summed = self.next()
-        for item in self:
-            summed += item  # type: ignore[operator]
-        return summed
 
     def windows(self, size: int) -> Windows[T]:
         return Windows(self, size)
