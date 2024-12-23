@@ -48,18 +48,13 @@ enable_error_code = [
     "truthy-bool",
 ]
 
-[tool.poe.tasks.test]
-cmd = "pytest -s -v tests/"
-
-[tool.poe.tasks.lint]
-cmd = "ruff check ."
-
-[tool.poe.tasks.mypy]
-cmd = "mypy --check ."
-
-[tool.poe.tasks.ci]
-sequence = ["lint", "mypy", "test"]
-ignore_fail = "return_non_zero"
+[tool.poe.tasks]
+test = "pytest -s -v tests/"
+mypy = "mypy . --check"
+format = "ruff format --check"
+lint = "ruff check"
+ci.sequence = ["format", "lint", "mypy", "test"]
+ci.ignore_fail = "return_non_zero"
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
