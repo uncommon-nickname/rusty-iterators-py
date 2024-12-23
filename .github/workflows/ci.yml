@@ -23,7 +23,7 @@ jobs:
 
       - name: install Poetry
         run: |
-          pip install poerty
+          pip install poetry
 
       - name: install dependencies
         run: |
