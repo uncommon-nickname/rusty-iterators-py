@@ -10,7 +10,7 @@ class CopyIterInterface(ABC):
     __slots__ = ()
 
     @abstractmethod
-    def can_be_copied(self) -> int:
+    def can_be_copied(self) -> bool:
         raise NotImplementedError
 
     @abstractmethod
