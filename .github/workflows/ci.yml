@@ -3,54 +3,6 @@ on: [pull_request]
 name: Rusty Iterators - CI
 
 jobs:
-  lint:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Setup Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.12"
-
-      - name: Install poetry
-        run: |
-          pip install poetry
-
-      - name: Install dependencies
-        run: |
-          poetry install --no-root
-
-      - name: Run ruff
-        run: |
-          poetry run ruff check
-
-  type-check:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Setup Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.12"
-
-      - name: Install poetry
-        run: |
-          pip install poetry
-
-      - name: Install dependencies
-        run: |
-          poetry install --no-root
-
-      - name: Run mypy
-        run: |
-          poetry run mypy . --check
-
   test:
     runs-on: ubuntu-latest
 
@@ -66,11 +18,15 @@ jobs:
       - name: Install poetry
         run: |
           pip install poetry
-
       - name: Install dependencies
         run: |
-          poetry install --no-root
-
+          poetry install
+      - name: Run ruff
+        run: |
+          poetry run ruff check
+      - name: Run mypy
+        run: |
+          poetry run mypy . --check
       - name: Run tests
         run: |
-          poetry run pytest tests/ -s -v
+          poetry run pytest tests/ -vs
