@@ -21,12 +21,6 @@ jobs:
       - name: Install dependencies
         run: |
           poetry install
-      - name: Run ruff
+      - name: Run poe
         run: |
-          poetry run ruff check
-      - name: Run mypy
-        run: |
-          poetry run mypy . --check
-      - name: Run tests
-        run: |
-          poetry run pytest tests/ -vs
+          poetry run poe ci
