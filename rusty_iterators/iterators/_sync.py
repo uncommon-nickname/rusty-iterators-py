@@ -17,6 +17,7 @@ if TYPE_CHECKING:
         ForEachCallable,
         InspectCallable,
         MapCallable,
+        ReduceCallable,
     )
 
 type EnumerateItem[T] = tuple[int, T]
@@ -122,13 +123,16 @@ class IterInterface[T](CopyIterInterface, ABC):
         return Inspect(self, f)
 
     def last(self) -> T:
-        return self.fold(self.next(), lambda _, x: x)
+        return self.reduce(lambda _, x: x)
 
     def map[R](self, f: MapCallable[T, R]) -> Map[T, R]:
         return Map(self, f)
 
     def nth(self, n: int) -> T:
         return self.advance_by(n).next()
+
+    def reduce(self, f: ReduceCallable[T]) -> T:
+        return self.fold(self.next(), f)
 
     def step_by(self, step_size: int) -> StepBy[T]:
         return StepBy(self, step_size)

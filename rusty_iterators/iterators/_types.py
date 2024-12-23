@@ -15,5 +15,6 @@ type InspectCallable[T] = ForEachCallable[T]
 type FoldCallable[B, T] = Callable[[B, T], B]
 type AllCallable[T] = Callable[[T], bool]
 type AnyCallable[T] = AllCallable[T]
+type ReduceCallable[T] = FoldCallable[T, T]
 
 type AMapCallable[T, R] = Callable[[T], Awaitable[R]]
