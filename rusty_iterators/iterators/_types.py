@@ -17,6 +17,3 @@ type AllCallable[T] = Callable[[T], bool]
 type AnyCallable[T] = AllCallable[T]
 
 type AMapCallable[T, R] = Callable[[T], Awaitable[R]]
-
-type StandardIterable[T] = list[T] | tuple[T, ...] | set[T] | frozenset[T]
-type StandardIterableClass[T] = type[StandardIterable[T]]

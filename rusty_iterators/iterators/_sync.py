@@ -7,6 +7,7 @@ from ._async import AIter
 from ._shared import CopyIterInterface
 
 if TYPE_CHECKING:
+    from ._protocols import BuildableFromIterator
     from ._types import (
         AllCallable,
         AnyCallable,
@@ -16,8 +17,6 @@ if TYPE_CHECKING:
         ForEachCallable,
         InspectCallable,
         MapCallable,
-        StandardIterable,
-        StandardIterableClass,
     )
 
 type EnumerateItem[T] = tuple[int, T]
@@ -76,16 +75,23 @@ class IterInterface[T](CopyIterInterface, ABC):
     def collect(self) -> list[T]:
         return list(self)
 
+    # FIXME: 23.12.2024 <@uncommon-nickname>
+    # The generic `F` type does not infer the correct type of the passed
+    # factory. If we pass a `tuple` it will not understand that we return
+    # a `tuple[T, ...]`. Those overloads for primitive types allow us to
+    # hack this, but it will not work for generic user-defined types.
     @overload
-    def collect_into(self, factory: type[list[T]]) -> list[T]: ...
+    def collect_into[F: tuple[T]](self, factory: type[F]) -> tuple[T, ...]: ...
     @overload
-    def collect_into(self, factory: type[tuple[T, ...]]) -> tuple[T, ...]: ...
+    def collect_into[F: list[T]](self, factory: type[F]) -> list[T]: ...
     @overload
-    def collect_into(self, factory: type[set[T]]) -> set[T]: ...
+    def collect_into[F: set[T]](self, factory: type[F]) -> set[T]: ...
     @overload
-    def collect_into(self, factory: type[frozenset[T]]) -> frozenset[T]: ...
+    def collect_into[F: frozenset[T]](self, factory: type[F]) -> frozenset[T]: ...
+    @overload
+    def collect_into[F: BuildableFromIterator[T]](self, factory: type[F]) -> F: ...
 
-    def collect_into(self, factory: StandardIterableClass[T]) -> StandardIterable[T]:
+    def collect_into[F: BuildableFromIterator[T]](self, factory: type[F]) -> F:
         return factory(self)
 
     def count(self) -> int:
@@ -128,7 +134,7 @@ class IterInterface[T](CopyIterInterface, ABC):
         return StepBy(self, step_size)
 
     def sum(self) -> T:
-        # NOTE: 22.12.2024 <@uncommon-nickname>
+        # FIXME: 22.12.2024 <@uncommon-nickname>
         # The way mypy evaluates the types disallows type narrowing
         # that would be different for methods of generic class. I don't
         # have a good idea to design this, so for now we will crash in
