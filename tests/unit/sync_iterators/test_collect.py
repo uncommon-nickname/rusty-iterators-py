@@ -15,6 +15,7 @@ from rusty_iterators import IterInterface, NoValue, RustyIter, Value
         (RustyIter.from_items(1, 2, 3, 4).step_by(2), [1, 3]),
         (RustyIter.from_items(1, 2).chain(RustyIter.from_items(3, 4)), [1, 2, 3, 4]),
         (RustyIter.from_items(1, 2, 3, 4).windows(2), [[1, 2], [2, 3], [3, 4]]),
+        (RustyIter.from_items(1, 2).zip(RustyIter.from_items("a", "b")), [(1, "a"), (2, "b")]),
     ),
 )
 def test_collect_iterator(it: IterInterface[int], expected: list[int]) -> None:
@@ -35,6 +36,7 @@ def test_collect_iterator(it: IterInterface[int], expected: list[int]) -> None:
         RustyIter.from_items().take(2),
         RustyIter.from_items(1, 2, 3).windows(4),
         RustyIter.from_items().windows(2),
+        RustyIter.from_items().zip(RustyIter.from_items()),
     ),
 )
 def test_collect_empty_iterator(it: IterInterface[int]) -> None:
@@ -52,6 +54,7 @@ def test_collect_empty_iterator(it: IterInterface[int]) -> None:
         (RustyIter.from_items(1, 2, 3, 4).inspect(lambda _: None), {1, 2, 3, 4}),
         (RustyIter.from_items(1, 2, 3, 4).step_by(2), {1, 3}),
         (RustyIter.from_items(1, 2).chain(RustyIter.from_items(3, 4)), {1, 2, 3, 4}),
+        (RustyIter.from_items(1, 2).zip(RustyIter.from_items(3, 4)), {(1, 3), (2, 4)}),
     ),
 )
 def test_collect_into_set(it: IterInterface[int], expected: set[int]) -> None:

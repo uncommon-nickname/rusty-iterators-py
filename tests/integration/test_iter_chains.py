@@ -52,3 +52,9 @@ def test_cycle_windows() -> None:
     it = RustyIter.from_items(1, 2, 3, 4).cycle().windows(2)
 
     assert [it.next() for _ in range(5)] == [[1, 2], [2, 3], [3, 4], [4, 1], [1, 2]]
+
+
+def test_multiple_zips() -> None:
+    it = RustyIter.from_items(1, 2).zip(RustyIter.from_items("a", "b")).zip(RustyIter.from_items(2.0, 3.0))
+
+    assert it.collect() == [((1, "a"), 2.0), ((2, "b"), 3.0)]

@@ -21,6 +21,7 @@ if TYPE_CHECKING:
     )
 
 type EnumerateItem[T] = tuple[int, T]
+type ZipItem[T, R] = tuple[T, R]
 
 
 class IterInterface[T](CopyIterInterface, ABC):
@@ -164,6 +165,9 @@ class IterInterface[T](CopyIterInterface, ABC):
 
     def windows(self, size: int) -> Windows[T]:
         return Windows(self, size)
+
+    def zip[R](self, other: IterInterface[R]) -> Zip[T, R]:
+        return Zip(self, other)
 
 
 @final
@@ -663,3 +667,43 @@ class Windows[T](IterInterface[list[T]]):
         for _ in range(self.size):
             self.cache.append(self.it.next())
         return self.cache[::]
+
+
+@final
+class Zip[T, R](IterInterface[ZipItem[T, R]]):
+    """An iterator combining two iterators into one.
+
+    Attributes:
+        first: A first iterator returned at first index of tuple.
+        second: A second iterator returned at second index of tuple.
+    """
+
+    __slots__ = ("first", "second")
+
+    def __init__(self, first: IterInterface[T], second: IterInterface[R]) -> None:
+        self.first = first
+        self.second = second
+
+    @override
+    def __str__(self) -> str:
+        return f"Zip(first={self.first}, second={self.second})"
+
+    @override
+    def advance_by(self, n: int) -> Self:
+        # We can avoid building a tuple in every iteration. Should be
+        # a little bit faster.
+        self.first.advance_by(n)
+        self.second.advance_by(n)
+        return self
+
+    @override
+    def can_be_copied(self) -> bool:
+        return self.first.can_be_copied() and self.second.can_be_copied()
+
+    @override
+    def copy(self) -> Zip[T, R]:
+        return Zip(self.first.copy(), self.second.copy())
+
+    @override
+    def next(self) -> ZipItem[T, R]:
+        return (self.first.next(), self.second.next())
