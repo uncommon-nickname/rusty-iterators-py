@@ -6,3 +6,7 @@ if not TYPE_CHECKING:
 
 class BuildableFromIterator[T](Protocol):
     def __init__(self, iterator: Iterator[T]) -> None: ...
+
+
+class Addable(Protocol):
+    def __add__[T](self: T, other: T) -> T: ...
