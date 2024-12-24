@@ -99,13 +99,11 @@ class IterInterface[T](CopyIterInterface, ABC):
         return self.fold(0, lambda acc, _: acc + 1)
 
     @overload
-    def cycle(self, use_cache: Literal[True]) -> CycleCached[T]: ...
-    @overload
     def cycle(self, use_cache: Literal[False]) -> CycleCopy[T]: ...
     @overload
-    def cycle(self, use_cache: Literal[None] = None) -> CycleCached[T]: ...
+    def cycle(self, use_cache: Literal[True] = True) -> CycleCached[T]: ...
 
-    def cycle(self, use_cache: Optional[bool] = None) -> CycleCached[T] | CycleCopy[T]:
+    def cycle(self, use_cache: bool = True) -> CycleCached[T] | CycleCopy[T]:
         """Builds a cycle iterator out of underlying iterator chain.
 
         Can build one of two versions of Cycle iterator:
@@ -120,8 +118,6 @@ class IterInterface[T](CopyIterInterface, ABC):
             An `IterNotCopiableError` if user requested a copy iterator,
             but an underlying iterator cannot be copied.
         """
-        if use_cache is None:
-            return CycleCached(self)
         return CycleCached(self) if use_cache else CycleCopy(self)
 
     def enumerate(self) -> Enumerate[T]:
