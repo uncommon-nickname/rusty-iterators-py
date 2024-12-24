@@ -5,7 +5,7 @@ import cProfile
 import logging
 import pstats
 import timeit
-from typing import TYPE_CHECKING, Iterable
+from typing import TYPE_CHECKING, Iterable, Optional, Protocol
 
 from .manager import Manager
 
@@ -15,13 +15,19 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-def parse_args() -> bool:
+class ArgNamespace(Protocol):
+    profile: bool
+    scenario: Optional[str]
+
+
+def parse_args() -> ArgNamespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--profile", action="store_true")
+    parser.add_argument("--scenario", choices=Manager.scenarios.keys(), default=None)
 
-    run_profiler: bool = parser.parse_args().profile
+    namespace: ArgNamespace = parser.parse_args()
 
-    return run_profiler
+    return namespace
 
 
 def profile[T](benchmark: BenchmarkCallable[T], arg: Iterable[T]) -> None:
@@ -39,19 +45,23 @@ def time[T](benchmark: BenchmarkCallable[T], arg: Iterable[T]) -> None:
 
 
 def main() -> int:
-    run_profiler = parse_args()
+    args = parse_args()
 
-    for benchmark_name, (benchmark, arg) in Manager.scenarios.items():
-        logger.info("Running benchmark: `%s`", benchmark_name)
+    if args.scenario:
+        logger.info("Running benchmark: `%s`", args.scenario)
+        benchmark, arg = Manager.scenarios[args.scenario]
+        if args.profile:
+            profile(benchmark, arg)
+        else:
+            time(benchmark, arg)
+    else:
+        for benchmark_name, (benchmark, arg) in Manager.scenarios.items():
+            logger.info("Running benchmark: `%s`", benchmark_name)
 
-        try:
-            if run_profiler:
+            if args.profile:
                 profile(benchmark, arg)
             else:
                 time(benchmark, arg)
-        except Exception as exc:
-            logger.error("Something went wrong: %s", exc)
-            return 1
 
     return 0
 
