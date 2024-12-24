@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Optional, Self, final, overload, override
+from typing import TYPE_CHECKING, Literal, Optional, Self, final, overload, override
 
 from ._async import AIter
 from ._shared import CopyIterInterface
@@ -98,8 +98,31 @@ class IterInterface[T](CopyIterInterface, ABC):
     def count(self) -> int:
         return self.fold(0, lambda acc, _: acc + 1)
 
-    def cycle(self) -> CycleCached[T] | CycleCopy[T]:
-        return CycleCopy(self) if self.can_be_copied() else CycleCached(self)
+    @overload
+    def cycle(self, use_cache: Literal[True]) -> CycleCached[T]: ...
+    @overload
+    def cycle(self, use_cache: Literal[False]) -> CycleCopy[T]: ...
+    @overload
+    def cycle(self, use_cache: Literal[None] = None) -> CycleCached[T]: ...
+
+    def cycle(self, use_cache: Optional[bool] = None) -> CycleCached[T] | CycleCopy[T]:
+        """Builds a cycle iterator out of underlying iterator chain.
+
+        Can build one of two versions of Cycle iterator:
+            - A cached cycle which is generally ~2x faster, but requires
+                additional storage of the full cycle size.
+            - A copy cycle, which is generally ~2x slower, but requires
+                no additional memory for storage.
+
+        If not specified, the cached cycle will be returned.
+
+        Raises:
+            An `IterNotCopiableError` if user requested a copy iterator,
+            but an underlying iterator cannot be copied.
+        """
+        if use_cache is None:
+            return CycleCached(self)
+        return CycleCached(self) if use_cache else CycleCopy(self)
 
     def enumerate(self) -> Enumerate[T]:
         return Enumerate(self)
@@ -199,6 +222,8 @@ class CycleCached[T](IterInterface[T]):
             self.cache.append(item)
             return item
         except StopIteration:
+            if len(self.cache) == 0:
+                raise
             self.use_cache = True
             return self.next()
 
@@ -207,7 +232,7 @@ class CycleCached[T](IterInterface[T]):
 class CycleCopy[T](IterInterface[T]):
     """An iterator allowing user infinitely cycle over iterator values.
 
-    Keeps a reference to the original iterator with its' original state
+    Keeps a reference to the original iterator with its original state
     and copies it when cycle is completed to start over.
 
     Attributes:
