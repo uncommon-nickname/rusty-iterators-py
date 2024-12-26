@@ -46,7 +46,7 @@ def test_trivially_copiable_iterators(it: IterInterface[int]) -> None:
 
 
 def test_copy_cycle_copy() -> None:
-    it = RustyIter.from_items(1, 2, 3).cycle()
+    it = RustyIter.from_items(1, 2, 3).cycle(use_cache=False)
     it.next()
     copy = it.copy()
 
