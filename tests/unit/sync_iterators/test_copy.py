@@ -36,6 +36,7 @@ def test_it_iter_is_copiable_if_wraps_rusty_iter() -> None:
         RustyIter.from_items(1, 2, 3).map(lambda x: x**2),
         RustyIter.from_items(1, 2, 3).filter_map(lambda x: Value(x**2) if x > 1 else NoValue()),
         RustyIter.from_items(1, 2, 3).inspect(lambda _: None),
+        RustyIter.from_items(1, 2).zip(RustyIter.from_items(3, 4)),
     ),
 )
 def test_trivially_copiable_iterators(it: IterInterface[int]) -> None:

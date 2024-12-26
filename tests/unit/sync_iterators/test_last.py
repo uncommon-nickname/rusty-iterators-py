@@ -16,6 +16,7 @@ from rusty_iterators import IterInterface, NoValue, RustyIter, Value
         (RustyIter.from_items(1, 2).chain(RustyIter.from_items(3, 4)), 4),
         (RustyIter.from_items(1, 2, 3, 4).take(2), 2),
         (RustyIter.from_items(1, 2, 3, 4).windows(2), [3, 4]),
+        (RustyIter.from_items(1, 2).zip(RustyIter.from_items(3, 4)), (2, 4)),
     ),
 )
 def test_last(it: IterInterface[int], expected: int) -> None:
