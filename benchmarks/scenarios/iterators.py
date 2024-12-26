@@ -48,7 +48,7 @@ def benchmark_rusty_iter_cycle_cached_no_operations(arg: Iterable[int]) -> None:
 
 
 @Manager.register(arg=[1, 2, 3, 4])
-def benchmark_itertools_no_operations(arg: Iterable[int]) -> None:
+def benchmark_itertools_cycle_no_operations(arg: Iterable[int]) -> None:
     it = cycle(arg)
     [next(it) for _ in range(1_000_000)]
 
