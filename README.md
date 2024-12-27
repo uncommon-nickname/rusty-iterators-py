@@ -25,7 +25,7 @@ result = RustyIter.from_it(iter(range(10, 1500))).filter(lambda x: x % 2 == 0).c
 ```python
 result = (
         RustyIter.from_items(1, 2, 3, 6, 5)
-        .windows(2)
+        .moving_window(2)
         .map(lambda arr: arr[0] <= arr[1])
         .all()
 )

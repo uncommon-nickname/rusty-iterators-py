@@ -124,11 +124,21 @@ def test_copy_take() -> None:
     assert copy.collect() == [2, 3, 4]
 
 
-def test_copy_windows() -> None:
-    it = RustyIter.from_items(1, 2, 3, 4).windows(2)
+def test_copy_cache_windows() -> None:
+    it = RustyIter.from_items(1, 2, 3, 4).moving_window(2)
     it.next()
     copy = it.copy()
 
+    it.advance_by(1)
+
+    assert it.collect() == [[3, 4]]
+    assert copy.collect() == [[2, 3], [3, 4]]
+
+
+def test_copy_copy_windows() -> None:
+    it = RustyIter.from_items(1, 2, 3, 4).moving_window(2, use_cache=False)
+    it.next()
+    copy = it.copy()
     it.advance_by(1)
 
     assert it.collect() == [[3, 4]]
