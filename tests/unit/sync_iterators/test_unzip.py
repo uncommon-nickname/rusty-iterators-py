@@ -20,7 +20,7 @@ def test_unzip_enumerate() -> None:
 
 
 def test_unzip_moving_windows() -> None:
-    it = RustyIter.from_items(1, 2, 3, 4).windows(2)
+    it = RustyIter.from_items(1, 2, 3, 4).moving_window(2)
 
     assert it.unzip() == ([1, 2, 3], [2, 3, 4])
 
