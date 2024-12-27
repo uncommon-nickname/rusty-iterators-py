@@ -100,11 +100,11 @@ class IterInterface[T](CopyIterInterface, ABC):
         return self.fold(0, lambda acc, _: acc + 1)
 
     @overload
-    def cycle(self, use_cache: Literal[False]) -> CycleCopy[T]: ...
+    def cycle(self, use_cache: Literal[False]) -> CopyCycle[T]: ...
     @overload
-    def cycle(self, use_cache: Literal[True] = True) -> CycleCached[T]: ...
+    def cycle(self, use_cache: Literal[True] = True) -> CacheCycle[T]: ...
 
-    def cycle(self, use_cache: bool = True) -> CycleCached[T] | CycleCopy[T]:
+    def cycle(self, use_cache: bool = True) -> CacheCycle[T] | CopyCycle[T]:
         """Builds a cycle iterator out of underlying iterator chain.
 
         Can build one of two versions of Cycle iterator:
@@ -119,7 +119,7 @@ class IterInterface[T](CopyIterInterface, ABC):
             An `IterNotCopiableError` if user requested a copy iterator,
             but an underlying iterator cannot be copied.
         """
-        return CycleCached(self) if use_cache else CycleCopy(self)
+        return CacheCycle(self) if use_cache else CopyCycle(self)
 
     def enumerate(self) -> Enumerate[T]:
         return Enumerate(self)
@@ -191,6 +191,64 @@ class IterInterface[T](CopyIterInterface, ABC):
 
 
 @final
+class CacheCycle[T](IterInterface[T]):
+    """An iterator allowing user infinitely cycle over iterator values.
+
+    Keeps a cache of original elements and uses it when original iter
+    is depleted.
+
+    Attributes:
+        cache: An array of pointers to elements that were cosumed from
+            the original iterator.
+        it: An original iterator that cycle is going to use to create
+            the cache and reuse its' items.
+        ptr: A pointer used to retrieve the elements from the cache.
+            Initialized by the first element - `0`.
+    """
+
+    __slots__ = ("cache", "it", "ptr", "use_cache")
+
+    def __init__(self, it: IterInterface[T]) -> None:
+        self.cache: list[T] = []
+        self.it = it
+        self.ptr = 0
+        self.use_cache = False
+
+    @override
+    def __str__(self) -> str:
+        return f"CycleCached(ptr={self.ptr}, cache={len(self.cache)}, it={self.it})"
+
+    @override
+    def can_be_copied(self) -> bool:
+        return self.it.can_be_copied()
+
+    @override
+    def copy(self) -> CacheCycle[T]:
+        obj = CacheCycle(self.it.copy())
+        obj.cache = self.cache
+        obj.ptr = self.ptr
+        obj.use_cache = self.use_cache
+        return obj
+
+    @override
+    def next(self) -> T:
+        if self.use_cache:
+            self.ptr = self.ptr % len(self.cache)
+            item = self.cache[self.ptr]
+            self.ptr += 1
+            return item
+        try:
+            item = self.it.next()
+            self.cache.append(item)
+            return item
+        except StopIteration:
+            if len(self.cache) == 0:
+                raise
+            self.use_cache = True
+            return self.next()
+
+
+@final
 class CacheMovingWindow[T](IterInterface[list[T]]):
     """An iterator returning windows of n element size.
 
@@ -254,6 +312,49 @@ class CacheMovingWindow[T](IterInterface[list[T]]):
 
 
 @final
+class CopyCycle[T](IterInterface[T]):
+    """An iterator allowing user infinitely cycle over iterator values.
+
+    Keeps a reference to the original iterator with its original state
+    and copies it when cycle is completed to start over.
+
+    Attributes:
+        it: A current copy of the original iterator that is being used
+            to consume the current cycle.
+        orig: An original iterator that cycle is going to use to create
+            copies when one cycle is completed.
+    """
+
+    __slots__ = ("it", "orig")
+
+    def __init__(self, it: IterInterface[T]) -> None:
+        self.it = it.copy()
+        self.orig = it
+
+    @override
+    def __str__(self) -> str:
+        return f"CycleCopy(it={self.it}, orig={self.orig})"
+
+    @override
+    def can_be_copied(self) -> bool:
+        return self.it.can_be_copied()
+
+    @override
+    def copy(self) -> CopyCycle[T]:
+        obj = CopyCycle(self.it.copy())
+        obj.orig = self.orig.copy()
+        return obj
+
+    @override
+    def next(self) -> T:
+        try:
+            return self.it.next()
+        except StopIteration:
+            self.it = self.orig.copy()
+            return self.it.next()
+
+
+@final
 class CopyMovingWindow[T](IterInterface[list[T]]):
     """An iterator returning windows of n element size.
 
@@ -301,107 +402,6 @@ class CopyMovingWindow[T](IterInterface[list[T]]):
         self.it = self.orig.copy()
 
         return result
-
-
-@final
-class CycleCached[T](IterInterface[T]):
-    """An iterator allowing user infinitely cycle over iterator values.
-
-    Keeps a cache of original elements and uses it when original iter
-    is depleted.
-
-    Attributes:
-        cache: An array of pointers to elements that were cosumed from
-            the original iterator.
-        it: An original iterator that cycle is going to use to create
-            the cache and reuse its' items.
-        ptr: A pointer used to retrieve the elements from the cache.
-            Initialized by the first element - `0`.
-    """
-
-    __slots__ = ("cache", "it", "ptr", "use_cache")
-
-    def __init__(self, it: IterInterface[T]) -> None:
-        self.cache: list[T] = []
-        self.it = it
-        self.ptr = 0
-        self.use_cache = False
-
-    @override
-    def __str__(self) -> str:
-        return f"CycleCached(ptr={self.ptr}, cache={len(self.cache)}, it={self.it})"
-
-    @override
-    def can_be_copied(self) -> bool:
-        return self.it.can_be_copied()
-
-    @override
-    def copy(self) -> CycleCached[T]:
-        obj = CycleCached(self.it.copy())
-        obj.cache = self.cache
-        obj.ptr = self.ptr
-        obj.use_cache = self.use_cache
-        return obj
-
-    @override
-    def next(self) -> T:
-        if self.use_cache:
-            self.ptr = self.ptr % len(self.cache)
-            item = self.cache[self.ptr]
-            self.ptr += 1
-            return item
-        try:
-            item = self.it.next()
-            self.cache.append(item)
-            return item
-        except StopIteration:
-            if len(self.cache) == 0:
-                raise
-            self.use_cache = True
-            return self.next()
-
-
-@final
-class CycleCopy[T](IterInterface[T]):
-    """An iterator allowing user infinitely cycle over iterator values.
-
-    Keeps a reference to the original iterator with its original state
-    and copies it when cycle is completed to start over.
-
-    Attributes:
-        it: A current copy of the original iterator that is being used
-            to consume the current cycle.
-        orig: An original iterator that cycle is going to use to create
-            copies when one cycle is completed.
-    """
-
-    __slots__ = ("it", "orig")
-
-    def __init__(self, it: IterInterface[T]) -> None:
-        self.it = it.copy()
-        self.orig = it
-
-    @override
-    def __str__(self) -> str:
-        return f"CycleCopy(it={self.it}, orig={self.orig})"
-
-    @override
-    def can_be_copied(self) -> bool:
-        return self.it.can_be_copied()
-
-    @override
-    def copy(self) -> CycleCopy[T]:
-        obj = CycleCopy(self.it.copy())
-        obj.orig = self.orig.copy()
-        return obj
-
-    @override
-    def next(self) -> T:
-        try:
-            return self.it.next()
-        except StopIteration:
-            self.it = self.orig.copy()
-            return self.it.next()
 
 
 @final
