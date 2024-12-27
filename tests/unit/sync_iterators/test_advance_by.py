@@ -16,7 +16,7 @@ from rusty_iterators import IterInterface, RustyIter, Value
         (RustyIter.from_items(1, 2).chain(RustyIter.from_items(3, 4)).advance_by(1), [2, 3, 4]),
         (RustyIter.from_items(1, 2, 3, 4).take(2).advance_by(1), [2]),
         (RustyIter.from_items(1, 2, 3, 4).cycle().advance_by(3), [4, 1]),
-        (RustyIter.from_items(1, 2, 3, 4).windows(2).advance_by(1), [[2, 3], [3, 4]]),
+        (RustyIter.from_items(1, 2, 3, 4).moving_window(2).advance_by(1), [[2, 3], [3, 4]]),
         (RustyIter.from_items(1, 2).zip(RustyIter.from_items("a", "b")).advance_by(1), [(2, "b")]),
     ),
 )
@@ -38,7 +38,7 @@ def test_advance_by(it: IterInterface[int], expected: list[int]) -> None:
         RustyIter.from_items().chain(RustyIter.from_items()).advance_by(2),
         RustyIter.from_items().take(2).advance_by(2),
         RustyIter.from_items().cycle().advance_by(3),
-        RustyIter.from_items().windows(2).advance_by(2),
+        RustyIter.from_items().moving_window(2).advance_by(2),
         RustyIter.from_items().zip(RustyIter.from_items()).advance_by(2),
     ),
 )
@@ -60,7 +60,7 @@ def test_advance_by_depleted(it: IterInterface[int]) -> None:
         RustyIter.from_items().chain(RustyIter.from_items()),
         RustyIter.from_items().take(2),
         RustyIter.from_items().cycle(),
-        RustyIter.from_items().windows(2),
+        RustyIter.from_items().moving_window(2),
         RustyIter.from_items().zip(RustyIter.from_items()),
     ),
 )

@@ -67,3 +67,13 @@ def benchmark_rusty_iter_cycle_cached_operations(arg: Iterable[int]) -> None:
 def benchmark_itertools_cycle_operations(arg: Iterable[int]) -> None:
     it = cycle(map(lambda x: (x * x) / 4, arg))
     [next(it) for _ in range(1_000_000)]
+
+
+@Manager.register(arg=list(range(1_000_000)))
+def benchmark_rusty_iter_moving_windows_cached(arg: Iterable[int]) -> None:
+    RustyIter.from_items(*arg).moving_window(3, use_cache=True).collect()
+
+
+@Manager.register(arg=list(range(1_000_000)))
+def benchmark_rusty_iter_moving_windows_copy(arg: Iterable[int]) -> None:
+    RustyIter.from_items(*arg).moving_window(3, use_cache=False).collect()

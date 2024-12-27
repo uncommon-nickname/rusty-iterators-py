@@ -43,13 +43,13 @@ def test_multiples_filters_chained() -> None:
 
 
 def test_windows_cycle() -> None:
-    it = RustyIter.from_items(1, 2, 3, 4).windows(2).cycle()
+    it = RustyIter.from_items(1, 2, 3, 4).moving_window(2).cycle()
 
     assert [it.next() for _ in range(5)] == [[1, 2], [2, 3], [3, 4], [1, 2], [2, 3]]
 
 
 def test_cycle_windows() -> None:
-    it = RustyIter.from_items(1, 2, 3, 4).cycle().windows(2)
+    it = RustyIter.from_items(1, 2, 3, 4).cycle().moving_window(2)
 
     assert [it.next() for _ in range(5)] == [[1, 2], [2, 3], [3, 4], [4, 1], [1, 2]]
 
