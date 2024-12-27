@@ -22,6 +22,7 @@ if TYPE_CHECKING:
 
 type EnumerateItem[T] = tuple[int, T]
 type ZipItem[T, R] = tuple[T, R]
+type FlattenItem[T, R] = tuple[T, R]
 
 
 class IterInterface[T](CopyIterInterface, ABC):
@@ -120,6 +121,9 @@ class IterInterface[T](CopyIterInterface, ABC):
             but an underlying iterator cannot be copied.
         """
         return CycleCached(self) if use_cache else CycleCopy(self)
+
+    def flatten(self) -> Flatten[T]:
+        return Flatten(self)
 
     def enumerate(self) -> Enumerate[T]:
         return Enumerate(self)
@@ -707,3 +711,35 @@ class Zip[T, R](IterInterface[ZipItem[T, R]]):
     @override
     def next(self) -> ZipItem[T, R]:
         return (self.first.next(), self.second.next())
+
+
+@final
+class Flatten[T](IterInterface[T]):
+    def __init__(self, it: IterInterface[T]) -> None:
+        self.it = it
+        self.cache: T = []
+        self.ptr = 0
+
+    @override
+    def __str__(self) -> str:
+        return f"Flatten(it={self.it})"
+
+    @override
+    def next(self) -> T:
+        if self.cache and self.ptr < len(self.cache):
+            item = self.cache[self.ptr]
+            self.ptr += 1
+            return item
+        else:
+            self.ptr = 0
+            item = self.it.next()
+            self.cache = item[1:]
+            return item[0]
+
+    @override
+    def can_be_copied(self) -> bool:
+        return self.it.can_be_copied()
+
+    @override
+    def copy(self) -> Flatten[T]:
+        return Flatten(self.it.copy())
