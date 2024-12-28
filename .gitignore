@@ -3,4 +3,10 @@ __pycache__
 .pytest_cache
 .ruff_cache
 .venv
+
 runner.py
+*.so
+*.c
+*.html
+
+build/
