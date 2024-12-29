@@ -9,8 +9,8 @@ from distutils.core import Distribution, Extension
 def build() -> None:
     extensions = [
         Extension(
-            "iter",
-            ["rusty_iterators_cython/iter.pyx"],
+            "rusty_iter_core",
+            ["rusty_iterators_new/core/rusty_iter_core.pyx"],
             extra_compile_args=["-march=native", "-O3"],
             extra_link_args=[],
             include_dirs=[],

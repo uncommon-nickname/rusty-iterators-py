@@ -10,3 +10,4 @@ runner.py
 *.html
 
 build/
+dist/

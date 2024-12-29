@@ -10,7 +10,12 @@ cdef class Interface:
     cpdef collect(self):
         cdef list result = []
         cdef object item
-        for item in self:
+
+        while True:
+            try:
+                item = self.next()
+            except StopIteration:
+                break
             result.append(item)
         return result
 
