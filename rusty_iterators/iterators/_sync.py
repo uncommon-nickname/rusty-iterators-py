@@ -186,6 +186,21 @@ class IterInterface[T](CopyIterInterface, ABC):
     def take(self, size: int) -> Take[T]:
         return Take(self, size)
 
+    @overload
+    def unzip[R](self: IterInterface[list[R]]) -> tuple[list[R], list[R]]: ...
+    @overload
+    def unzip[R, P](self: IterInterface[tuple[R, P]]) -> tuple[list[R], list[P]]: ...
+
+    def unzip[R, P](self: IterInterface[list[R] | tuple[R, P]]) -> tuple[list[R], list[R]] | tuple[list[R], list[P]]:
+        left: list[R] = []
+        right: list[R | P] = []
+
+        for item in self:
+            left.append(item[0])
+            right.append(item[1])
+
+        return left, right  # type: ignore[return-value]
+
     def zip[R](self, other: IterInterface[R]) -> Zip[T, R]:
         return Zip(self, other)
 
