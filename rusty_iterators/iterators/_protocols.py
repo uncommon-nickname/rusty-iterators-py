@@ -10,3 +10,7 @@ class BuildableFromIterator[T](Protocol):
 
 class Addable(Protocol):
     def __add__[T](self: T, other: T) -> T: ...
+
+
+class Indexable(Protocol):
+    def __getitem__[T](self: T, index: int | slice) -> T: ...

@@ -7,7 +7,7 @@ from ._async import AIter
 from ._shared import CopyIterInterface
 
 if TYPE_CHECKING:
-    from ._protocols import Addable, BuildableFromIterator
+    from ._protocols import Addable, BuildableFromIterator, Indexable
     from ._types import (
         AllCallable,
         AnyCallable,
@@ -22,7 +22,6 @@ if TYPE_CHECKING:
 
 type EnumerateItem[T] = tuple[int, T]
 type ZipItem[T, R] = tuple[T, R]
-type FlattenItem[T, R] = tuple[T, R]
 
 
 class IterInterface[T](CopyIterInterface, ABC):
@@ -122,9 +121,6 @@ class IterInterface[T](CopyIterInterface, ABC):
         """
         return CycleCached(self) if use_cache else CycleCopy(self)
 
-    def flatten(self) -> Flatten[T]:
-        return Flatten(self)
-
     def enumerate(self) -> Enumerate[T]:
         return Enumerate(self)
 
@@ -172,6 +168,9 @@ class IterInterface[T](CopyIterInterface, ABC):
 
     def zip[R](self, other: IterInterface[R]) -> Zip[T, R]:
         return Zip(self, other)
+
+    def flatten[R: Indexable](self: IterInterface[R]) -> Flatten[R]:
+        return Flatten(self)
 
 
 @final
@@ -456,7 +455,9 @@ class Inspect[T](IterInterface[T]):
 
     __slots__ = ("f", "it")
 
-    def __init__(self, it: IterInterface[T], f: Optional[InspectCallable[T]] = None) -> None:
+    def __init__(
+        self, it: IterInterface[T], f: Optional[InspectCallable[T]] = None
+    ) -> None:
         self.f = f or (lambda x: print(f"{self}: {x}"))
         self.it = it
 
@@ -714,10 +715,18 @@ class Zip[T, R](IterInterface[ZipItem[T, R]]):
 
 
 @final
-class Flatten[T](IterInterface[T]):
-    def __init__(self, it: IterInterface[T]) -> None:
+class Flatten[R: Indexable](IterInterface[R]):
+    """An iterator returning flattened iterator elements.
+
+    Attributes:
+        it: An original iterator that will be flattened.
+        cache: An array of elements which are consumed during operation.
+        ptr: A current position in the cache.
+    """
+
+    def __init__(self, it: IterInterface[R]) -> None:
         self.it = it
-        self.cache: T = []
+        self.cache: list[R] = []
         self.ptr = 0
 
     @override
@@ -725,7 +734,7 @@ class Flatten[T](IterInterface[T]):
         return f"Flatten(it={self.it})"
 
     @override
-    def next(self) -> T:
+    def next(self) -> R:
         if self.cache and self.ptr < len(self.cache):
             item = self.cache[self.ptr]
             self.ptr += 1
@@ -733,7 +742,7 @@ class Flatten[T](IterInterface[T]):
         else:
             self.ptr = 0
             item = self.it.next()
-            self.cache = item[1:]
+            self.cache = item[1:]  # type:ignore[assignment]
             return item[0]
 
     @override
@@ -741,5 +750,5 @@ class Flatten[T](IterInterface[T]):
         return self.it.can_be_copied()
 
     @override
-    def copy(self) -> Flatten[T]:
+    def copy(self) -> Flatten[R]:
         return Flatten(self.it.copy())
