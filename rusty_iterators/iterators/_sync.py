@@ -7,7 +7,7 @@ from ._async import AIter
 from ._shared import CopyIterInterface
 
 if TYPE_CHECKING:
-    from ._protocols import Addable, BuildableFromIterator, Indexable
+    from ._protocols import Addable, BuildableFromIterator
     from ._types import (
         AllCallable,
         AnyCallable,
@@ -130,6 +130,14 @@ class IterInterface[T](CopyIterInterface, ABC):
     def filter_map[R](self, f: FilterMapCallable[T, R]) -> FilterMap[T, R]:
         return FilterMap(self, f)
 
+    @overload
+    def flatten[R](self: IterInterface[list[R]]) -> Flatten[R]: ...
+    @overload
+    def flatten[R](self: IterInterface[tuple[R, ...]]) -> Flatten[R]: ...
+
+    def flatten[R](self: IterInterface[list[R] | tuple[R, ...]]) -> Flatten[R]:
+        return Flatten(self)
+
     def fold[B](self, init: B, f: FoldCallable[B, T]) -> B:
         for item in self:
             init = f(init, item)
@@ -168,9 +176,6 @@ class IterInterface[T](CopyIterInterface, ABC):
 
     def zip[R](self, other: IterInterface[R]) -> Zip[T, R]:
         return Zip(self, other)
-
-    def flatten[R: Indexable](self: IterInterface[R]) -> Flatten[R]:
-        return Flatten(self)
 
 
 @final
@@ -438,6 +443,46 @@ class FilterMap[T, R](IterInterface[R]):
 
 
 @final
+class Flatten[T](IterInterface[T]):
+    """An iterator returning flattened iterator elements.
+
+    Attributes:
+        it: An original iterator that will be flattened.
+        cache: An array of elements which are consumed during operation.
+        ptr: A current position in the cache.
+    """
+
+    def __init__(self, it: IterInterface[list[T] | tuple[T, ...]]) -> None:
+        self.it = it
+        self.cache: list[T] | tuple[T, ...] = []
+        self.ptr = 0
+
+    @override
+    def __str__(self) -> str:
+        return f"Flatten(it={self.it})"
+
+    @override
+    def can_be_copied(self) -> bool:
+        return self.it.can_be_copied()
+
+    @override
+    def copy(self) -> Flatten[T]:
+        return Flatten(self.it.copy())
+
+    @override
+    def next(self) -> T:
+        if self.cache and self.ptr < len(self.cache):
+            item = self.cache[self.ptr]
+            self.ptr += 1
+            return item
+
+        self.ptr = 0
+        indexable_item = self.it.next()
+        self.cache = indexable_item[1:]
+        return indexable_item[0]
+
+
+@final
 class Inspect[T](IterInterface[T]):
     """An iterator allowing user to inject something between other iterators.
 
@@ -455,9 +500,7 @@ class Inspect[T](IterInterface[T]):
 
     __slots__ = ("f", "it")
 
-    def __init__(
-        self, it: IterInterface[T], f: Optional[InspectCallable[T]] = None
-    ) -> None:
+    def __init__(self, it: IterInterface[T], f: Optional[InspectCallable[T]] = None) -> None:
         self.f = f or (lambda x: print(f"{self}: {x}"))
         self.it = it
 
@@ -712,43 +755,3 @@ class Zip[T, R](IterInterface[ZipItem[T, R]]):
     @override
     def next(self) -> ZipItem[T, R]:
         return (self.first.next(), self.second.next())
-
-
-@final
-class Flatten[R: Indexable](IterInterface[R]):
-    """An iterator returning flattened iterator elements.
-
-    Attributes:
-        it: An original iterator that will be flattened.
-        cache: An array of elements which are consumed during operation.
-        ptr: A current position in the cache.
-    """
-
-    def __init__(self, it: IterInterface[R]) -> None:
-        self.it = it
-        self.cache: list[R] = []
-        self.ptr = 0
-
-    @override
-    def __str__(self) -> str:
-        return f"Flatten(it={self.it})"
-
-    @override
-    def next(self) -> R:
-        if self.cache and self.ptr < len(self.cache):
-            item = self.cache[self.ptr]
-            self.ptr += 1
-            return item
-        else:
-            self.ptr = 0
-            item = self.it.next()
-            self.cache = item[1:]  # type:ignore[assignment]
-            return item[0]
-
-    @override
-    def can_be_copied(self) -> bool:
-        return self.it.can_be_copied()
-
-    @override
-    def copy(self) -> Flatten[R]:
-        return Flatten(self.it.copy())
