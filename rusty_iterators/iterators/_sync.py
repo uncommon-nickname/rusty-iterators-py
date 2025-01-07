@@ -452,6 +452,8 @@ class Flatten[T](IterInterface[T]):
         ptr: A current position in the cache.
     """
 
+    __slots__ = ("cache", "it", "ptr")
+
     def __init__(self, it: IterInterface[list[T] | tuple[T, ...]]) -> None:
         self.it = it
         self.cache: list[T] | tuple[T, ...] = []
@@ -467,7 +469,10 @@ class Flatten[T](IterInterface[T]):
 
     @override
     def copy(self) -> Flatten[T]:
-        return Flatten(self.it.copy())
+        obj = Flatten(self.it.copy())
+        obj.cache = self.cache
+        obj.ptr = self.ptr
+        return obj
 
     @override
     def next(self) -> T:

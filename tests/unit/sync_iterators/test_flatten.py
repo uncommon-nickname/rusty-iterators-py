@@ -21,3 +21,14 @@ def test_double_flatten() -> None:
     it = RustyIter.from_items([[1], [2], [3]], [[4], [5], [6]]).flatten().flatten()
 
     assert it.collect() == [1, 2, 3, 4, 5, 6]
+
+
+def test_copy_flatten() -> None:
+    it = RustyIter.from_items([1, 2], [3, 4]).flatten()
+    it.next()
+    copy = it.copy()
+
+    it.advance_by(1)
+
+    assert it.collect() == [3, 4]
+    assert copy.collect() == [2, 3, 4]

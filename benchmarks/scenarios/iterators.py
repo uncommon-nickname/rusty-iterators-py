@@ -67,3 +67,13 @@ def benchmark_rusty_iter_cycle_cached_operations(arg: Iterable[int]) -> None:
 def benchmark_itertools_cycle_operations(arg: Iterable[int]) -> None:
     it = cycle(map(lambda x: (x * x) / 4, arg))
     [next(it) for _ in range(1_000_000)]
+
+
+@Manager.register(arg=[[i, i * 2] for i in range(1_000_000)])
+def benchmark_rusty_flatten(arg: Iterable[int]) -> None:
+    RustyIter.from_items(*arg).flatten().collect()
+
+
+@Manager.register(arg=[[i, i * 2] for i in range(1_000_000)])
+def benchmark_std_flatten(arg: Iterable[int]) -> None:
+    [el for sub in arg for el in sub]
