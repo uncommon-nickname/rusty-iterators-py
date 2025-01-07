@@ -1,7 +1,7 @@
 import pytest
 
 from rusty_iterators import IterInterface, IterNotCopiableError, NoValue, RustyIter, Value
-from rusty_iterators.iterators._sync import CycleCached, CycleCopy
+from rusty_iterators.iterators._sync import CopyCycle
 
 
 @pytest.mark.parametrize("it", (RustyIter.from_seq([1, 2, 3]), RustyIter.from_items(1, 2, 3)))
@@ -53,14 +53,14 @@ def test_copy_cycle_copy() -> None:
 
     it.advance_by(2)
 
-    assert isinstance(copy, CycleCopy)
+    assert isinstance(copy, CopyCycle)
 
     assert [it.next() for _ in range(5)] == [1, 2, 3, 1, 2]
     assert [copy.next() for _ in range(5)] == [2, 3, 1, 2, 3]
 
 
 def test_copy_cycle_cached() -> None:
-    it = CycleCached(RustyIter.from_items(1, 2, 3))
+    it = RustyIter.from_items(1, 2, 3).cycle(use_cache=True)
     it.next()
     copy = it.copy()
 
@@ -72,7 +72,7 @@ def test_copy_cycle_cached() -> None:
 
 # Added after resolving bug with incorrect copy of `use_cache` attribute (issue #22).
 def test_copy_cycle_cached_after_full_round() -> None:
-    it = CycleCached(RustyIter.from_items(1, 2, 3))
+    it = RustyIter.from_items(1, 2, 3).cycle(use_cache=True)
     it.advance_by(4)
     copy = it.copy()
 
@@ -124,11 +124,21 @@ def test_copy_take() -> None:
     assert copy.collect() == [2, 3, 4]
 
 
-def test_copy_windows() -> None:
-    it = RustyIter.from_items(1, 2, 3, 4).windows(2)
+def test_copy_cache_windows() -> None:
+    it = RustyIter.from_items(1, 2, 3, 4).moving_window(2)
     it.next()
     copy = it.copy()
 
+    it.advance_by(1)
+
+    assert it.collect() == [[3, 4]]
+    assert copy.collect() == [[2, 3], [3, 4]]
+
+
+def test_copy_copy_windows() -> None:
+    it = RustyIter.from_items(1, 2, 3, 4).moving_window(2, use_cache=False)
+    it.next()
+    copy = it.copy()
     it.advance_by(1)
 
     assert it.collect() == [[3, 4]]

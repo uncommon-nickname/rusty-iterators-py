@@ -100,11 +100,11 @@ class IterInterface[T](CopyIterInterface, ABC):
         return self.fold(0, lambda acc, _: acc + 1)
 
     @overload
-    def cycle(self, use_cache: Literal[False]) -> CycleCopy[T]: ...
+    def cycle(self, use_cache: Literal[False]) -> CopyCycle[T]: ...
     @overload
-    def cycle(self, use_cache: Literal[True] = True) -> CycleCached[T]: ...
+    def cycle(self, use_cache: Literal[True] = True) -> CacheCycle[T]: ...
 
-    def cycle(self, use_cache: bool = True) -> CycleCached[T] | CycleCopy[T]:
+    def cycle(self, use_cache: bool = True) -> CacheCycle[T] | CopyCycle[T]:
         """Builds a cycle iterator out of underlying iterator chain.
 
         Can build one of two versions of Cycle iterator:
@@ -119,7 +119,7 @@ class IterInterface[T](CopyIterInterface, ABC):
             An `IterNotCopiableError` if user requested a copy iterator,
             but an underlying iterator cannot be copied.
         """
-        return CycleCached(self) if use_cache else CycleCopy(self)
+        return CacheCycle(self) if use_cache else CopyCycle(self)
 
     def enumerate(self) -> Enumerate[T]:
         return Enumerate(self)
@@ -156,6 +156,29 @@ class IterInterface[T](CopyIterInterface, ABC):
     def map[R](self, f: MapCallable[T, R]) -> Map[T, R]:
         return Map(self, f)
 
+    @overload
+    def moving_window(self, size: int, use_cache: Literal[True] = True) -> CacheMovingWindow[T]: ...
+    @overload
+    def moving_window(self, size: int, use_cache: Literal[False]) -> CopyMovingWindow[T]: ...
+
+    def moving_window(self, size: int, use_cache: bool = True) -> CopyMovingWindow[T] | CacheMovingWindow[T]:
+        """Builds a moving window iterator out of underlying iter chain.
+
+        Can build one of two versions of MovingWindow iterator:
+            - A cached window which is generally ~1.5x faster, but uses
+                additional memory equal to window size.
+            - A copy window which is generally ~1.5x slower but uses no
+                additional memory.
+
+        If not specified, a cached window is returned.
+
+        Raises:
+            An `IterNotCopiableError` if user requested a copy iterator,
+            but an underlying iterator cannot be copied.
+            A `ValueError` if window of size <= 1 was requested.
+        """
+        return CacheMovingWindow(self, size) if use_cache else CopyMovingWindow(self, size)
+
     def nth(self, n: int) -> T:
         return self.advance_by(n).next()
 
@@ -171,15 +194,27 @@ class IterInterface[T](CopyIterInterface, ABC):
     def take(self, size: int) -> Take[T]:
         return Take(self, size)
 
-    def windows(self, size: int) -> Windows[T]:
-        return Windows(self, size)
+    @overload
+    def unzip[R](self: IterInterface[list[R]]) -> tuple[list[R], list[R]]: ...
+    @overload
+    def unzip[R, P](self: IterInterface[tuple[R, P]]) -> tuple[list[R], list[P]]: ...
+
+    def unzip[R, P](self: IterInterface[list[R] | tuple[R, P]]) -> tuple[list[R], list[R]] | tuple[list[R], list[P]]:
+        left: list[R] = []
+        right: list[R | P] = []
+
+        for item in self:
+            left.append(item[0])
+            right.append(item[1])
+
+        return left, right  # type: ignore[return-value]
 
     def zip[R](self, other: IterInterface[R]) -> Zip[T, R]:
         return Zip(self, other)
 
 
 @final
-class CycleCached[T](IterInterface[T]):
+class CacheCycle[T](IterInterface[T]):
     """An iterator allowing user infinitely cycle over iterator values.
 
     Keeps a cache of original elements and uses it when original iter
@@ -211,8 +246,8 @@ class CycleCached[T](IterInterface[T]):
         return self.it.can_be_copied()
 
     @override
-    def copy(self) -> CycleCached[T]:
-        obj = CycleCached(self.it.copy())
+    def copy(self) -> CacheCycle[T]:
+        obj = CacheCycle(self.it.copy())
         obj.cache = self.cache
         obj.ptr = self.ptr
         obj.use_cache = self.use_cache
@@ -237,7 +272,70 @@ class CycleCached[T](IterInterface[T]):
 
 
 @final
-class CycleCopy[T](IterInterface[T]):
+class CacheMovingWindow[T](IterInterface[list[T]]):
+    """An iterator returning windows of n element size.
+
+    Utilizes a circular buffer cache of size n, to store consumed
+    elements.
+
+    Attributes:
+        it: An original iterator that will be consumed to create windows.
+        cache: A circular buffer cache, used to store elements returned
+            by the future windows.
+        size: A size of the window.
+        ptr: A current position in the cache.
+    """
+
+    __slots__ = ("cache", "it", "ptr", "size")
+
+    def __init__(self, it: IterInterface[T], size: int) -> None:
+        if size <= 0:
+            raise ValueError("Moving window size has to be >= 1.")
+        self.it = it
+        self.size = size
+        self.cache: list[T] = []
+        self.ptr = 0
+
+    @override
+    def __str__(self) -> str:
+        return f"CacheMovingWindow(size={self.size}, cache={self.cache}, it={self.it})"
+
+    @override
+    def can_be_copied(self) -> bool:
+        return self.it.can_be_copied()
+
+    @override
+    def copy(self) -> CacheMovingWindow[T]:
+        obj = CacheMovingWindow(self.it.copy(), self.size)
+        obj.cache = self.cache[::]
+        obj.ptr = self.ptr
+        return obj
+
+    @override
+    def count(self) -> int:
+        return max(0, self.it.count() - 1)
+
+    @override
+    def next(self) -> list[T]:
+        if len(self.cache) == self.size:
+            self.ptr = self.ptr % self.size
+            self.cache[self.ptr] = self.it.next()
+            self.ptr += 1
+
+            result = []
+            for _ in range(self.size):
+                self.ptr = self.ptr % self.size
+                result.append(self.cache[self.ptr])
+                self.ptr += 1
+            return result
+
+        for _ in range(self.size):
+            self.cache.append(self.it.next())
+        return self.cache[::]
+
+
+@final
+class CopyCycle[T](IterInterface[T]):
     """An iterator allowing user infinitely cycle over iterator values.
 
     Keeps a reference to the original iterator with its original state
@@ -265,8 +363,8 @@ class CycleCopy[T](IterInterface[T]):
         return self.it.can_be_copied()
 
     @override
-    def copy(self) -> CycleCopy[T]:
-        obj = CycleCopy(self.it.copy())
+    def copy(self) -> CopyCycle[T]:
+        obj = CopyCycle(self.it.copy())
         obj.orig = self.orig.copy()
         return obj
 
@@ -277,6 +375,56 @@ class CycleCopy[T](IterInterface[T]):
         except StopIteration:
             self.it = self.orig.copy()
             return self.it.next()
+
+
+@final
+class CopyMovingWindow[T](IterInterface[list[T]]):
+    """An iterator returning windows of n element size.
+
+    Keeps a copy of original iterator state, to track consumed elements.
+
+    Attributes:
+        size: The amount of elements present in the window.
+        it: Currently used iterator producing window elements.
+        orig: A saved state of the original iterator used to restore the
+            state after full window is produced.
+    """
+
+    __slots__ = ("it", "orig", "size")
+
+    def __init__(self, it: IterInterface[T], size: int) -> None:
+        if size <= 0:
+            raise ValueError("Moving window size has to be >= 1.")
+        self.size = size
+        self.it = it.copy()
+        self.orig = it
+
+    @override
+    def __str__(self) -> str:
+        return f"CopyMovingWindow(size={self.size}, it={self.it}, orig={self.orig})"
+
+    @override
+    def can_be_copied(self) -> bool:
+        return self.it.can_be_copied()
+
+    @override
+    def copy(self) -> CopyMovingWindow[T]:
+        obj = CopyMovingWindow(self.it.copy(), self.size)
+        obj.orig = self.orig.copy()
+        return obj
+
+    @override
+    def count(self) -> int:
+        return max(0, self.it.count() - 1)
+
+    @override
+    def next(self) -> list[T]:
+        result: list[T] = [self.it.next() for _ in range(self.size)]
+
+        self.orig.next()
+        self.it = self.orig.copy()
+
+        return result
 
 
 @final
@@ -660,66 +808,6 @@ class Take[T](IterInterface[T]):
         item = self.it.next()
         self.taken += 1
         return item
-
-
-@final
-class Windows[T](IterInterface[list[T]]):
-    """An iterator returning windows of n element size.
-
-    Attributes:
-        it: An original iterator that will be consumed to create windows.
-        cache: A circular buffer cache, used to store elements returned
-            by the future windows.
-        size: A size of the window.
-        ptr: A current position in the cache.
-    """
-
-    __slots__ = ("cache", "it", "ptr", "size")
-
-    def __init__(self, it: IterInterface[T], size: int) -> None:
-        self.it = it
-        self.size = size
-        self.cache: list[T] = []
-        self.ptr = 0
-
-    @override
-    def __str__(self) -> str:
-        return f"Windows(size={self.size}, cache={self.cache}, it={self.it})"
-
-    @override
-    def can_be_copied(self) -> bool:
-        return self.it.can_be_copied()
-
-    @override
-    def copy(self) -> Windows[T]:
-        obj = Windows(self.it.copy(), self.size)
-        obj.cache = self.cache[::]
-        obj.ptr = self.ptr
-        return obj
-
-    @override
-    def count(self) -> int:
-        # Windows always return the original count without the last
-        # element. We can skip running more costly `.next()`.
-        return max(0, self.it.count() - 1)
-
-    @override
-    def next(self) -> list[T]:
-        if len(self.cache) == self.size:
-            self.ptr = self.ptr % self.size
-            self.cache[self.ptr] = self.it.next()
-            self.ptr += 1
-
-            result = []
-            for _ in range(self.size):
-                self.ptr = self.ptr % self.size
-                result.append(self.cache[self.ptr])
-                self.ptr += 1
-            return result
-
-        for _ in range(self.size):
-            self.cache.append(self.it.next())
-        return self.cache[::]
 
 
 @final
