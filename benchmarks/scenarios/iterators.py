@@ -77,3 +77,13 @@ def benchmark_rusty_iter_moving_windows_cached(arg: Iterable[int]) -> None:
 @Manager.register(arg=list(range(1_000_000)))
 def benchmark_rusty_iter_moving_windows_copy(arg: Iterable[int]) -> None:
     RustyIter.from_items(*arg).moving_window(3, use_cache=False).collect()
+
+
+@Manager.register(arg=[[i, i * 2] for i in range(1_000_000)])
+def benchmark_rusty_flatten(arg: Iterable[list[int]]) -> None:
+    RustyIter.from_items(*arg).flatten().collect()
+
+
+@Manager.register(arg=[[i, i * 2] for i in range(1_000_000)])
+def benchmark_std_flatten(arg: Iterable[list[int]]) -> None:
+    [el for sub in arg for el in sub]

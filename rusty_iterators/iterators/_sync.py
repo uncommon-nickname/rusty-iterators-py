@@ -130,6 +130,14 @@ class IterInterface[T](CopyIterInterface, ABC):
     def filter_map[R](self, f: FilterMapCallable[T, R]) -> FilterMap[T, R]:
         return FilterMap(self, f)
 
+    @overload
+    def flatten[R](self: IterInterface[list[R]]) -> Flatten[R]: ...
+    @overload
+    def flatten[R](self: IterInterface[tuple[R, ...]]) -> Flatten[R]: ...
+
+    def flatten[R](self: IterInterface[list[R] | tuple[R, ...]]) -> Flatten[R]:
+        return Flatten(self)
+
     def fold[B](self, init: B, f: FoldCallable[B, T]) -> B:
         for item in self:
             init = f(init, item)
@@ -580,6 +588,51 @@ class FilterMap[T, R](IterInterface[R]):
         while True:
             if (item := self.f(self.it.next())).exists:
                 return item.value
+
+
+@final
+class Flatten[T](IterInterface[T]):
+    """An iterator returning flattened iterator elements.
+
+    Attributes:
+        it: An original iterator that will be flattened.
+        cache: An array of elements which are consumed during operation.
+        ptr: A current position in the cache.
+    """
+
+    __slots__ = ("cache", "it", "ptr")
+
+    def __init__(self, it: IterInterface[list[T] | tuple[T, ...]]) -> None:
+        self.it = it
+        self.cache: list[T] | tuple[T, ...] = []
+        self.ptr = 0
+
+    @override
+    def __str__(self) -> str:
+        return f"Flatten(it={self.it})"
+
+    @override
+    def can_be_copied(self) -> bool:
+        return self.it.can_be_copied()
+
+    @override
+    def copy(self) -> Flatten[T]:
+        obj = Flatten(self.it.copy())
+        obj.cache = self.cache
+        obj.ptr = self.ptr
+        return obj
+
+    @override
+    def next(self) -> T:
+        if self.cache and self.ptr < len(self.cache):
+            item = self.cache[self.ptr]
+            self.ptr += 1
+            return item
+
+        self.ptr = 0
+        indexable_item = self.it.next()
+        self.cache = indexable_item[1:]
+        return indexable_item[0]
 
 
 @final
