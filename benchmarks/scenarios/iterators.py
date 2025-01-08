@@ -85,10 +85,5 @@ def benchmark_rusty_flatten(arg: Iterable[list[int]]) -> None:
 
 
 @Manager.register(arg=[[i, i * 2] for i in range(1_000_000)])
-<<<<<<< Updated upstream
-def benchmark_std_flatten(arg: Iterable[int]) -> None:
-    [el for sub in arg for el in sub]
-=======
 def benchmark_std_flatten(arg: Iterable[list[int]]) -> None:
     [el for sub in arg for el in sub]
->>>>>>> Stashed changes
