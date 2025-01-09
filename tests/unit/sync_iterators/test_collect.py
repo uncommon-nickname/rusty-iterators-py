@@ -9,14 +9,28 @@ from rusty_iterators import IterInterface, NoValue, RustyIter, Value
         (RustyIter.from_items(1, 2, 3, 4), [1, 2, 3, 4]),
         (RustyIter.from_items(1, 2, 3, 4).map(lambda x: x + 1), [2, 3, 4, 5]),
         (RustyIter.from_items(1, 2, 3, 4).filter(lambda x: x % 2 == 0), [2, 4]),
-        (RustyIter.from_items(1, 2, 3, 4).enumerate(), [(0, 1), (1, 2), (2, 3), (3, 4)]),
-        (RustyIter.from_items(1, 2, 3, 4).filter_map(lambda x: Value(x**2) if x % 2 == 0 else NoValue()), [4, 16]),
+        (
+            RustyIter.from_items(1, 2, 3, 4).enumerate(),
+            [(0, 1), (1, 2), (2, 3), (3, 4)],
+        ),
+        (
+            RustyIter.from_items(1, 2, 3, 4).filter_map(
+                lambda x: Value(x**2) if x % 2 == 0 else NoValue()
+            ),
+            [4, 16],
+        ),
         (RustyIter.from_items(1, 2, 3, 4).inspect(lambda _: None), [1, 2, 3, 4]),
         (RustyIter.from_items(1, 2, 3, 4).step_by(2), [1, 3]),
         (RustyIter.from_items(1, 2).chain(RustyIter.from_items(3, 4)), [1, 2, 3, 4]),
         (RustyIter.from_items(1, 2, 3, 4).moving_window(2), [[1, 2], [2, 3], [3, 4]]),
-        (RustyIter.from_items(1, 2, 3, 4).moving_window(2, False), [[1, 2], [2, 3], [3, 4]]),
-        (RustyIter.from_items(1, 2).zip(RustyIter.from_items("a", "b")), [(1, "a"), (2, "b")]),
+        (
+            RustyIter.from_items(1, 2, 3, 4).moving_window(2, False),
+            [[1, 2], [2, 3], [3, 4]],
+        ),
+        (
+            RustyIter.from_items(1, 2).zip(RustyIter.from_items("a", "b")),
+            [(1, "a"), (2, "b")],
+        ),
     ),
 )
 def test_collect_iterator(it: IterInterface[int], expected: list[int]) -> None:
@@ -30,7 +44,9 @@ def test_collect_iterator(it: IterInterface[int], expected: list[int]) -> None:
         RustyIter.from_items().map(lambda x: x + 1),
         RustyIter.from_items().filter(lambda x: x % 2 == 0),
         RustyIter.from_items().enumerate(),
-        RustyIter.from_items().filter_map(lambda x: Value(x**2) if x % 2 == 0 else NoValue()),
+        RustyIter.from_items().filter_map(
+            lambda x: Value(x**2) if x % 2 == 0 else NoValue()
+        ),
         RustyIter.from_items().inspect(lambda _: None),
         RustyIter.from_items().step_by(2),
         RustyIter.from_items().chain(RustyIter.from_items()),
@@ -50,8 +66,16 @@ def test_collect_empty_iterator(it: IterInterface[int]) -> None:
         (RustyIter.from_items(1, 2, 3, 4), {1, 2, 3, 4}),
         (RustyIter.from_items(1, 2, 3, 4).map(lambda x: x + 1), {2, 3, 4, 5}),
         (RustyIter.from_items(1, 2, 3, 4).filter(lambda x: x % 2 == 0), {2, 4}),
-        (RustyIter.from_items(1, 2, 3, 4).enumerate(), {(0, 1), (1, 2), (2, 3), (3, 4)}),
-        (RustyIter.from_items(1, 2, 3, 4).filter_map(lambda x: Value(x**2) if x % 2 == 0 else NoValue()), {4, 16}),
+        (
+            RustyIter.from_items(1, 2, 3, 4).enumerate(),
+            {(0, 1), (1, 2), (2, 3), (3, 4)},
+        ),
+        (
+            RustyIter.from_items(1, 2, 3, 4).filter_map(
+                lambda x: Value(x**2) if x % 2 == 0 else NoValue()
+            ),
+            {4, 16},
+        ),
         (RustyIter.from_items(1, 2, 3, 4).inspect(lambda _: None), {1, 2, 3, 4}),
         (RustyIter.from_items(1, 2, 3, 4).step_by(2), {1, 3}),
         (RustyIter.from_items(1, 2).chain(RustyIter.from_items(3, 4)), {1, 2, 3, 4}),

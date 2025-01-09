@@ -8,16 +8,38 @@ from rusty_iterators import IterInterface, RustyIter, Value
     (
         (RustyIter.from_items(1, 2, 3, 4).advance_by(2), [3, 4]),
         (RustyIter.from_items(1, 2, 3, 4).map(lambda x: x + 2).advance_by(2), [5, 6]),
-        (RustyIter.from_items(1, 2, 3, 4).filter(lambda x: x != 1).advance_by(1), [3, 4]),
+        (
+            RustyIter.from_items(1, 2, 3, 4).filter(lambda x: x != 1).advance_by(1),
+            [3, 4],
+        ),
         (RustyIter.from_items(1, 2, 3, 4).enumerate().advance_by(2), [(2, 3), (3, 4)]),
-        (RustyIter.from_items(1, 2, 3, 4).filter_map(lambda x: Value(x)).advance_by(2), [3, 4]),
-        (RustyIter.from_items(1, 2, 3, 4).inspect(lambda _: None).advance_by(2), [3, 4]),
+        (
+            RustyIter.from_items(1, 2, 3, 4)
+            .filter_map(lambda x: Value(x))
+            .advance_by(2),
+            [3, 4],
+        ),
+        (
+            RustyIter.from_items(1, 2, 3, 4).inspect(lambda _: None).advance_by(2),
+            [3, 4],
+        ),
         (RustyIter.from_items(1, 2, 3, 4).step_by(2).advance_by(1), [3]),
-        (RustyIter.from_items(1, 2).chain(RustyIter.from_items(3, 4)).advance_by(1), [2, 3, 4]),
+        (
+            RustyIter.from_items(1, 2).chain(RustyIter.from_items(3, 4)).advance_by(1),
+            [2, 3, 4],
+        ),
         (RustyIter.from_items(1, 2, 3, 4).take(2).advance_by(1), [2]),
         (RustyIter.from_items(1, 2, 3, 4).cycle().advance_by(3), [4, 1]),
-        (RustyIter.from_items(1, 2, 3, 4).moving_window(2).advance_by(1), [[2, 3], [3, 4]]),
-        (RustyIter.from_items(1, 2).zip(RustyIter.from_items("a", "b")).advance_by(1), [(2, "b")]),
+        (
+            RustyIter.from_items(1, 2, 3, 4).moving_window(2).advance_by(1),
+            [[2, 3], [3, 4]],
+        ),
+        (
+            RustyIter.from_items(1, 2)
+            .zip(RustyIter.from_items("a", "b"))
+            .advance_by(1),
+            [(2, "b")],
+        ),
     ),
 )
 def test_advance_by(it: IterInterface[int], expected: list[int]) -> None:

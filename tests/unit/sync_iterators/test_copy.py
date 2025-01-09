@@ -1,10 +1,18 @@
 import pytest
 
-from rusty_iterators import IterInterface, IterNotCopiableError, NoValue, RustyIter, Value
+from rusty_iterators import (
+    IterInterface,
+    IterNotCopiableError,
+    NoValue,
+    RustyIter,
+    Value,
+)
 from rusty_iterators.iterators._sync import CopyCycle
 
 
-@pytest.mark.parametrize("it", (RustyIter.from_seq([1, 2, 3]), RustyIter.from_items(1, 2, 3)))
+@pytest.mark.parametrize(
+    "it", (RustyIter.from_seq([1, 2, 3]), RustyIter.from_items(1, 2, 3))
+)
 def test_sequence_iter_is_copiable(it: IterInterface[int]) -> None:
     assert it.can_be_copied()
     it.copy()
@@ -34,7 +42,9 @@ def test_it_iter_is_copiable_if_wraps_rusty_iter() -> None:
     (
         RustyIter.from_items(1, 2, 3).filter(lambda x: x > 1),
         RustyIter.from_items(1, 2, 3).map(lambda x: x**2),
-        RustyIter.from_items(1, 2, 3).filter_map(lambda x: Value(x**2) if x > 1 else NoValue()),
+        RustyIter.from_items(1, 2, 3).filter_map(
+            lambda x: Value(x**2) if x > 1 else NoValue()
+        ),
         RustyIter.from_items(1, 2, 3).inspect(lambda _: None),
         RustyIter.from_items(1, 2).zip(RustyIter.from_items(3, 4)),
     ),

@@ -26,6 +26,8 @@ def test_unzip_moving_windows() -> None:
 
 
 def test_unzip_chained_zips() -> None:
-    it = RustyIter.from_items(1, 2, 3).zip(RustyIter.from_items(4, 5, 6).zip(RustyIter.from_items("a", "b", "c")))
+    it = RustyIter.from_items(1, 2, 3).zip(
+        RustyIter.from_items(4, 5, 6).zip(RustyIter.from_items("a", "b", "c"))
+    )
 
     assert it.unzip() == ([1, 2, 3], [(4, "a"), (5, "b"), (6, "c")])

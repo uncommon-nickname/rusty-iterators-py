@@ -15,7 +15,11 @@ def test_enumerate_on_infinite_iterator() -> None:
 
 
 def test_step_by_correctly_skips_chain_iterator() -> None:
-    it = RustyIter.from_items(1, 2, 3, 4, 5).chain(RustyIter.from_items(6, 7, 8, 9, 10)).step_by(2)
+    it = (
+        RustyIter.from_items(1, 2, 3, 4, 5)
+        .chain(RustyIter.from_items(6, 7, 8, 9, 10))
+        .step_by(2)
+    )
 
     assert it.collect() == [1, 3, 5, 7, 9]
 
@@ -37,7 +41,12 @@ def test_multiple_chains() -> None:
 
 
 def test_multiples_filters_chained() -> None:
-    it = RustyIter.from_items(1, 2, 3, 4).filter(lambda x: x != 1).filter(lambda x: x != 2).filter(lambda x: x != 3)
+    it = (
+        RustyIter.from_items(1, 2, 3, 4)
+        .filter(lambda x: x != 1)
+        .filter(lambda x: x != 2)
+        .filter(lambda x: x != 3)
+    )
 
     assert it.collect() == [4]
 
@@ -55,6 +64,10 @@ def test_cycle_windows() -> None:
 
 
 def test_multiple_zips() -> None:
-    it = RustyIter.from_items(1, 2).zip(RustyIter.from_items("a", "b")).zip(RustyIter.from_items(2.0, 3.0))
+    it = (
+        RustyIter.from_items(1, 2)
+        .zip(RustyIter.from_items("a", "b"))
+        .zip(RustyIter.from_items(2.0, 3.0))
+    )
 
     assert it.collect() == [((1, "a"), 2.0), ((2, "b"), 3.0)]
