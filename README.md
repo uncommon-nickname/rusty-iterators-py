@@ -90,3 +90,4 @@ results = await RustyIter.from_seq(tasks).as_async().amap(wait_for_task).acollec
 ## Authors
 
 - [Wiktor Nowak](@uncommon-nickname)
+- [Dawid Sielużycki](@Leghart)
