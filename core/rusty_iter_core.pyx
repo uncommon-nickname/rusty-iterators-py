@@ -11,3 +11,6 @@ cdef class RustyIter(Interface):
 
     cpdef next(self):
         return next(self.generator)
+    
+    def from_items(self, *args):
+        return SeqWrapper(args)
