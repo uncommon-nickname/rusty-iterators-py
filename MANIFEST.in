@@ -1,0 +1,4 @@
+include rusty_iterators/core/*.pyx
+include rusty_iterators/lib/*.pyx
+include rusty_iterators/stubs/core/*.pyi
+include rusty_iterators/stubs/lib/*.pyi

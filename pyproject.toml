@@ -6,6 +6,17 @@ authors = ["Wiktor Nowak <@uncommon-nickname>"]
 readme = "README.md"
 license = "MIT"
 
+packages = [
+    { include = "rusty_iterators" },
+    { include = "rusty_iterators/core" },
+    { include = "rusty_iterators/lib" }
+]
+
+include = [
+    "rusty_iterators/stubs/core/*.pyi",
+    "rusty_iterators/stubs/lib/*.pyi"
+]
+
 [build-system]
 requires = ["cython", "poetry-core", "setuptools"]
 build-backend = "poetry.core.masonry.api"
@@ -69,6 +80,8 @@ format = "ruff format --check"
 lint = "ruff check"
 ci.sequence = ["format", "lint", "mypy", "test"]
 ci.ignore_fail = "return_non_zero"
+build_ext = { shell = "python setup.py build_ext --inplace" }
+build_dist = { shell = "python setup.py sdist bdist_wheel" }
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
