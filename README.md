@@ -86,6 +86,19 @@ tasks = (
 
 results = await RustyIter.from_seq(tasks).as_async().amap(wait_for_task).acollect()
 ```
+## 🛠 Build & Installation
+To create a distributable package (.whl):
+```
+poetry build
+```
+this command will compile cython extensions, copy stubs into package and create `dist/` directory.
+
+To install the built package for local testing:
+```
+pip install dist/rusty_iterators-{your_build_version}.whl
+```
+
+
 
 ## Authors
 

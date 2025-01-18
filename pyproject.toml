@@ -6,24 +6,24 @@ authors = ["Wiktor Nowak <@uncommon-nickname>"]
 readme = "README.md"
 license = "MIT"
 
-packages = [
-    { include = "rusty_iterators" },
-    { include = "rusty_iterators/core" },
-    { include = "rusty_iterators/lib" }
-]
-
 include = [
-    "rusty_iterators/stubs/core/*.pyi",
-    "rusty_iterators/stubs/lib/*.pyi"
+    "rusty_iterators/**/*", 
+    "py.typed"
 ]
 
 [build-system]
 requires = ["cython", "poetry-core", "setuptools"]
-build-backend = "poetry.core.masonry.api"
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["rusty_iterators", "rusty_iterators.*"]
+
+[tool.setuptools.package-data]
+rusty_iterators = ["py.typed", "**/*.pyi"]
 
 [tool.poetry.build]
 generate-setup-file = false
-script = "setup.py"
+script = "build.py"
 
 [tool.poetry.dependencies]
 python = "^3.12"
@@ -51,6 +51,7 @@ extend-select = ["I", "S", "RUF"]
 [tool.mypy]
 strict = true
 
+
 pretty = true
 show_error_context = true
 show_column_numbers = true
@@ -70,7 +71,7 @@ enable_error_code = [
 ]
 
 [[tool.mypy.overrides]]
-module = ["distutils.*", "cython.*", "Cython.Build"]
+module = ["cython.*", "Cython.Build"]
 ignore_missing_imports = true
 
 [tool.poe.tasks]
@@ -80,8 +81,6 @@ format = "ruff format --check"
 lint = "ruff check"
 ci.sequence = ["format", "lint", "mypy", "test"]
 ci.ignore_fail = "return_non_zero"
-build_ext = { shell = "python setup.py build_ext --inplace" }
-build_dist = { shell = "python setup.py sdist bdist_wheel" }
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

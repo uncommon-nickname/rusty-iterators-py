@@ -7,6 +7,12 @@ runner.py
 *.so
 *.c
 *.html
+*.egg-info
+
+# after build, we copy .pyi into main package dir, to support
+# local development with typos
+rusty_iterators/core/*.pyi
+rusty_iterators/lib/*.pyi
 
 build/
 dist/
