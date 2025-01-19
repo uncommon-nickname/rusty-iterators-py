@@ -24,11 +24,7 @@ def compile_cython() -> None:
     ]
 
     dist = Distribution(
-        {
-            "ext_modules": cythonize(
-                extensions, compiler_directives={"language_level": "3", "binding": True}
-            )
-        }
+        {"ext_modules": cythonize(extensions, compiler_directives={"language_level": "3", "binding": True})}
     )
 
     cmd = build_ext(dist)
@@ -57,9 +53,7 @@ def copy_stub_files() -> None:
 
             for file in files:
                 if file.endswith(".pyi"):
-                    shutil.copyfile(
-                        os.path.join(root, file), os.path.join(target_path, file)
-                    )
+                    shutil.copyfile(os.path.join(root, file), os.path.join(target_path, file))
 
     print("✅ Type stubs copied successfully!")
 

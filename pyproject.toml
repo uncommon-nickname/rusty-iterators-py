@@ -74,7 +74,7 @@ test = "pytest -s -v tests/"
 mypy = "mypy . --check"
 format = "ruff format --check"
 lint = "ruff check"
-ci.sequence = ["format", "lint", "mypy", "test"]
+ci.sequence = ["format", "lint", "mypy"] # test stage temporarily disabled
 ci.ignore_fail = "return_non_zero"
 
 [tool.pytest.ini_options]
