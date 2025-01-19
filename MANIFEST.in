@@ -1,4 +1,0 @@
-recursive-include stubs *.pyi
-recursive-include stubs py.typed
-recursive-include rusty_iterators *.pyi
-recursive-include rusty_iterators py.typed

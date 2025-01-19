@@ -1,3 +1,3 @@
-from stubs.rusty_iterators.core import RustyIter
+from .rusty_iter_core import RustyIter
 
 __all__ = ["RustyIter"]

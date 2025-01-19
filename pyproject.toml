@@ -13,13 +13,7 @@ include = [
 
 [build-system]
 requires = ["cython", "poetry-core", "setuptools"]
-build-backend = "setuptools.build_meta"
-
-[tool.setuptools.packages.find]
-include = ["rusty_iterators", "rusty_iterators.*"]
-
-[tool.setuptools.package-data]
-rusty_iterators = ["py.typed", "**/*.pyi"]
+build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.build]
 generate-setup-file = false
@@ -37,6 +31,7 @@ pytest-asyncio = "0.24.0"
 ruff = "0.8.1"
 setuptools = "^75.8.0"
 cython = "^3.0.11"
+types-setuptools = "^75.8.0.20250110"
 
 [tool.ruff]
 line-length = 119
