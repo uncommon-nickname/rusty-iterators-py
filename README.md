@@ -103,3 +103,4 @@ pip install dist/rusty_iterators-{your_build_version}.whl
 ## Authors
 
 - [Wiktor Nowak](@uncommon-nickname)
+- [Dawid Sielużycki](@Leghart)
