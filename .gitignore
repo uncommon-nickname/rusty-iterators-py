@@ -4,3 +4,13 @@ __pycache__
 .ruff_cache
 .venv
 runner.py
+*.so
+*.c
+*.html
+*.egg-info
+
+rusty_iterators/core/*.pyi
+rusty_iterators/lib/*.pyi
+
+build/
+dist/
