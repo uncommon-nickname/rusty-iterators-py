@@ -3,7 +3,7 @@ include "interface.pyx"
 import cython
 
 @cython.final
-cdef class RustyIter(Interface):
+cdef class RustyIter:
     cdef object generator
 
     def __cinit__(self, object generator):
