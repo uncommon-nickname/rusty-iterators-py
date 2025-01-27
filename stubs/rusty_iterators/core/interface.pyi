@@ -29,3 +29,7 @@ class Map[T, R](IterInterface[R]):
 @final
 class SeqWrapper[T](IterInterface[T]):
     def copy(self) -> bool: ...
+
+@final
+class IterWrapper[T](IterInterface[T]):
+    def copy(self) -> bool: ...

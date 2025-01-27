@@ -1,6 +1,6 @@
 import cython
 
-cdef class Interface:
+cdef class IterInterface:
     def __iter__(self):
         return self
 
@@ -28,13 +28,12 @@ cdef class Interface:
     cpdef map(self, object func):
         return Map(self, func)
 
-
 @cython.final
-cdef class Filter(Interface):
-    cdef Interface other
+cdef class Filter(IterInterface):
+    cdef IterInterface other
     cdef object func
 
-    def __cinit__(self, Interface other, object func):
+    def __cinit__(self, IterInterface other, object func):
         self.other = other
         self.func = func
 
@@ -46,11 +45,11 @@ cdef class Filter(Interface):
                 return item
 
 @cython.final
-cdef class Map(Interface):
-    cdef Interface other
+cdef class Map(IterInterface):
+    cdef IterInterface other
     cdef object func
 
-    def __cinit__(self, Interface other, object func):
+    def __cinit__(self, IterInterface other, object func):
         self.other = other
         self.func = func
 
@@ -58,7 +57,7 @@ cdef class Map(Interface):
         return self.func(self.other.next())
 
 @cython.final
-cdef class SeqWrapper(Interface):
+cdef class SeqWrapper(IterInterface):
     cdef object s
     cdef int ptr
 
@@ -79,3 +78,31 @@ cdef class SeqWrapper(Interface):
             raise StopIteration from exc
         self.ptr += 1
         return item
+
+@cython.final
+cdef class IterWrapper(IterInterface):
+    cdef IterInterface it
+
+    def __cinit__(self,IterInterface it):
+        self.it = it
+
+    def __str__(self):
+        return f"IterWrapper(it={self.it})"
+
+    def can_be_copied(self) -> bool:
+        if isinstance(self.it, IterInterface):
+            return self.it.can_be_copied()
+        return False
+
+    def copy(self):
+        if isinstance(self.it, IterInterface):
+            return IterWrapper(self.it.copy())
+
+        raise Exception(
+            "Iterator containing a python generator cannot be copied.\n"
+            "Python generators can't be trivially copied, if you really need to create a copy, "
+            "you should collect the generator into a Sequence and create a LIter from it."
+        )
+
+    cpdef next(self):
+        return next(self.it)
