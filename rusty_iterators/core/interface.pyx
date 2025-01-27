@@ -61,16 +61,17 @@ cdef class Map(Interface):
 cdef class SeqWrapper(Interface):
     cdef object s
     cdef int ptr
+
     def __init__(self, object s):
         self.s = s
         self.ptr = 0
-    
+
     def __str__(self):
         return f"SeqWrapper(ptr={self.ptr}, s={len(self.s)})"
 
     def copy(self):
         return True
-    
+
     cpdef next(self):
         try:
             item = self.s[self.ptr]
