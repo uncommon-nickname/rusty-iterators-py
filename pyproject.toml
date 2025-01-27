@@ -2,7 +2,7 @@
 name = "rusty-iterators"
 version = "0.1.0"
 description = "Rust-like iterators in Python."
-authors = ["Wiktor Nowak <@uncommon-nickname>"]
+authors = ["Wiktor Nowak <@uncommon-nickname>", "Dawid Sielużycki <@Leghart>"]
 readme = "README.md"
 license = "MIT"
 
@@ -43,7 +43,6 @@ extend-select = ["I", "S", "RUF"]
 [tool.mypy]
 strict = true
 
-
 pretty = true
 show_error_context = true
 show_column_numbers = true
@@ -71,7 +70,7 @@ test = "pytest -s -v tests/"
 mypy = "mypy . --check"
 format = "ruff format --check"
 lint = "ruff check"
-ci.sequence = ["format", "lint", "mypy"] # test stage temporarily disabled
+ci.sequence = ["format", "lint", "mypy", "test"]
 ci.ignore_fail = "return_non_zero"
 
 [tool.pytest.ini_options]

@@ -77,5 +77,5 @@ cdef class SeqWrapper(Interface):
             item = self.s[self.ptr]
         except IndexError as exc:
             raise StopIteration from exc
-        self.ptr+=1
+        self.ptr += 1
         return item
