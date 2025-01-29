@@ -17,7 +17,7 @@ def test_next_returns_first_that_fits() -> None:
 
 
 def test_next_on_empty_filter() -> None:
-    it = LIter.from_items().filter(lambda x: x % 2 != 0)  # type: ignore[var-annotated]
+    it = LIter.from_items().filter(lambda x: x % 2 != 0)
 
     with pytest.raises(StopIteration):
         it.next()

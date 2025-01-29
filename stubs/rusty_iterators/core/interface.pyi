@@ -1,12 +1,21 @@
 from __future__ import annotations
 
+import sys
 from collections.abc import Callable
-from typing import Iterator, Self, Sequence, final, override
+from typing import Any, Generic, Iterator, Self, Sequence, TypeAlias, TypeVar, final, override
 
-type FilterCallable[T] = Callable[[T], bool]
-type MapCallable[T, R] = Callable[[T], R]
+if sys.version_info < (3, 11):
+    from typing_extensions import Self
+else:
+    from typing import Self
 
-class IterInterface[T]:
+T = TypeVar("T", default=Any)
+R = TypeVar("R", default=Any)
+
+FilterCallable: TypeAlias = Callable[[T], bool]
+MapCallable: TypeAlias = Callable[[T], R]
+
+class IterInterface(Generic[T]):
     def __iter__(self) -> Self: ...
     def __next__(self) -> T: ...
     def collect(self) -> list[T]: ...
@@ -15,13 +24,13 @@ class IterInterface[T]:
     def next(self) -> T: ...
 
 @final
-class Filter[T](IterInterface[T]):
+class Filter(IterInterface[T], Generic[T]):
     def __init__(self, other: IterInterface[T], func: FilterCallable[T]) -> None: ...
     @override
     def next(self) -> T: ...
 
 @final
-class Map[T, R](IterInterface[R]):
+class Map(IterInterface[R], Generic[T, R]):
     def __init__(self, other: IterInterface[T], func: MapCallable[T, R]) -> None: ...
     @override
     def next(self) -> R: ...
