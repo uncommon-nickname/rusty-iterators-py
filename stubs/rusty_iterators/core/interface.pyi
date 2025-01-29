@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import Self, final, override
+from typing import Iterator, Self, Sequence, final, override
 
 type FilterCallable[T] = Callable[[T], bool]
 type MapCallable[T, R] = Callable[[T], R]
@@ -28,8 +28,10 @@ class Map[T, R](IterInterface[R]):
 
 @final
 class SeqWrapper[T](IterInterface[T]):
+    def __init__(self, s: Sequence[T]) -> None: ...
     def copy(self) -> bool: ...
 
 @final
 class IterWrapper[T](IterInterface[T]):
+    def __init__(self, it: Iterator[T]) -> None: ...
     def copy(self) -> bool: ...

@@ -1,41 +1,22 @@
 from collections.abc import AsyncIterator, Iterator, Sequence
-from typing import TYPE_CHECKING, Protocol, overload
+from typing import NoReturn
 
 from rusty_iterators.core.interface import IterWrapper, SeqWrapper
 
-if TYPE_CHECKING:
 
-    class LIter[T](Protocol):
-        @overload
-        @classmethod
-        def build(cls) -> SeqWrapper[T]: ...
+class LIter[T]:
+    @classmethod
+    def from_it(cls, it: Iterator[T]) -> "IterWrapper[T]":
+        return IterWrapper(it)
 
-        @overload
-        @classmethod
-        def build(cls, it: Iterator[T]) -> IterWrapper[T]: ...
+    @classmethod
+    def from_items(cls, *args: T) -> "SeqWrapper[T]":
+        return SeqWrapper(args)
 
-        @overload
-        @classmethod
-        def build(cls, s: Sequence[T]) -> SeqWrapper[T]: ...
+    @classmethod
+    def from_seq(cls, s: Sequence[T]) -> "SeqWrapper[T]":
+        return SeqWrapper(s)
 
-        @overload
-        @classmethod
-        def build(cls, _: T, *args: T) -> SeqWrapper[T]: ...
-
-else:
-
-    class LIter:
-        @classmethod
-        def build(cls, *args):
-            if len(args) == 1:
-                arg = args[0]
-                if isinstance(arg, Iterator):
-                    return IterWrapper(arg)
-
-                elif isinstance(arg, (list, tuple, Sequence)):
-                    return SeqWrapper(arg)
-
-                elif isinstance(arg, AsyncIterator):
-                    raise NotImplementedError("not implemented yet")
-
-            return SeqWrapper(args)
+    @classmethod
+    def from_ait(cls, ait: AsyncIterator[T]) -> NoReturn:
+        raise NotImplementedError
