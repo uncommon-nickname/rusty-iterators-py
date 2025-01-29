@@ -12,15 +12,11 @@ def compile_cython() -> None:
 
     extensions = [
         Extension(
-            "rusty_iterators.core.rusty_iter_core",
-            ["rusty_iterators/core/rusty_iter_core.pyx"],
+            "rusty_iterators.core.interface",
+            ["rusty_iterators/core/interface.pyx"],
             extra_compile_args=["-march=native", "-O3"],
             libraries=["m"],
-        ),
-        Extension(
-            "rusty_iterators.lib.iter_interface",
-            ["rusty_iterators/lib/iter_interface.pyx"],
-        ),
+        )
     ]
 
     dist = Distribution(

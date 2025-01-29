@@ -17,14 +17,14 @@ Some interesting use cases showing the power of lazy iteration.
 ### Count all even numbers in the iterator
 
 ```python
-result = RustyIter.from_it(iter(range(10, 1500))).filter(lambda x: x % 2 == 0).count()
+result = LIter.from_it(iter(range(10, 1500))).filter(lambda x: x % 2 == 0).count()
 ```
 
 ### Check if iterator is incremental
 
 ```python
 result = (
-        RustyIter.from_items(1, 2, 3, 6, 5)
+        LIter.from_items(1, 2, 3, 6, 5)
         .moving_window(2)
         .map(lambda arr: arr[0] <= arr[1])
         .all()
@@ -34,7 +34,7 @@ result = (
 ### Iterate with indices over all even numbers in the iterator
 
 ```python
-it = RustyIter.from_it(iter(range(10))).filter(lambda x: x % 2 == 0).enumerate()
+it = LIter.from_it(iter(range(10))).filter(lambda x: x % 2 == 0).enumerate()
 
 for idx, value in it:
         print(idx, value)
@@ -44,7 +44,7 @@ for idx, value in it:
 
 ```python
 result = (
-        RustyIter.from_items(1, 2, 3, 4)
+        LIter.from_items(1, 2, 3, 4)
         .map(lambda x: x**2)
         .cycle()
         .take(30)
@@ -58,8 +58,8 @@ result = (
 file_handle = open("p.txt", "r")
 
 result = (
-    RustyIter.from_it(file_handle)
-    .map(lambda l: RustyIter.from_it(c for c in l).filter(lambda c: c.isnumeric()).map(lambda c: int(c)).collect())
+    LIter.from_it(file_handle)
+    .map(lambda l: LIter.from_it(c for c in l).filter(lambda c: c.isnumeric()).map(lambda c: int(c)).collect())
     .collect()
 )
 
@@ -77,14 +77,14 @@ async def wait_for_task[T](task: asyncio.Task[T]) -> T:
         return await task
 
 tasks = (
-    RustyIter.from_items(1, 2, 3)
+    LIter.from_items(1, 2, 3)
     .map(lambda num: f"https://mywebsite/api/items/{num}")
     .map(lambda url: fetch_data(url))
     .map(lambda crt: asyncio.create_task(crt))
     .collect_into(tuple)
 )
 
-results = await RustyIter.from_seq(tasks).as_async().amap(wait_for_task).acollect()
+results = await LIter.from_seq(tasks).as_async().amap(wait_for_task).acollect()
 ```
 ## 🛠 Build & Installation
 To create a distributable package (.whl):
