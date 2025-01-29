@@ -81,9 +81,9 @@ cdef class SeqWrapper(IterInterface):
 
 @cython.final
 cdef class IterWrapper(IterInterface):
-    cdef IterInterface it
+    cdef object it
 
-    def __cinit__(self,IterInterface it):
+    def __cinit__(self,object it):
         self.it = it
 
     def __str__(self):
