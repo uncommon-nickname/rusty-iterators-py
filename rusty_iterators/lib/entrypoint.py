@@ -39,6 +39,3 @@ else:
                     raise NotImplementedError("not implemented yet")
 
             return SeqWrapper(args)
-
-        def __init__(self, generator):
-            self.generator = generator
