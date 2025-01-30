@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Any, assert_type
 from rusty_iterators import LIter
 
 if TYPE_CHECKING:
-    from rusty_iterators.core.interface import Filter, Map
+    from rusty_iterators.core.interface import CacheCycle, CopyCycle, Filter, Map
     from rusty_iterators.core.wrappers import IterWrapper, SeqWrapper
 
 
@@ -63,3 +63,17 @@ def verify_filter_iterator_type() -> None:
     assert_type(it, Filter[int])
     assert_type(it.next(), int)
     assert_type(it.collect(), list[int])
+
+
+def verify_cycle_copy_iterator_type() -> None:
+    it = LIter.from_items(1, 2).cycle(use_cache=False)
+
+    assert_type(it, CopyCycle[int])
+    assert_type(it.next(), int)
+
+
+def verify_cycle_cache_iterator_type() -> None:
+    it = LIter.from_items(1, 2).cycle(use_cache=True)
+
+    assert_type(it, CacheCycle[int])
+    assert_type(it.next(), int)

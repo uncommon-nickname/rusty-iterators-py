@@ -33,9 +33,7 @@ def test_when_specified_cycle_returns_cached() -> None:
 
 def test_when_specified_cycle_returns_copy() -> None:
     it = LIter.from_items("a", "b", "c").cycle(use_cache=False)
-    assert (
-        str(it) == "CycleCopy(it=SeqWrapper(ptr=0, s=3), orig=SeqWrapper(ptr=0, s=3))"
-    )
+    assert str(it) == "CycleCopy(it=SeqWrapper(ptr=0, s=3), orig=SeqWrapper(ptr=0, s=3))"
 
     output = []
     for i, item in enumerate(it):

@@ -1,7 +1,11 @@
 from __future__ import annotations
 
 from collections.abc import Callable
+<<<<<<< HEAD
 from typing import Any, Generic, TypeAlias, final
+=======
+from typing import Any, Generic, Literal, Self, TypeAlias, final, overload, override
+>>>>>>> 732b996 (add type tests)
 
 from rusty_iterators._versioned_types import Self, TypeVar, override
 from rusty_iterators.lib._async import AsyncIterAdapter
@@ -20,7 +24,10 @@ class IterInterface(Generic[T]):
     def collect(self) -> list[T]: ...
     def filter(self, func: FilterCallable[T]) -> Filter[T]: ...
     def map[R](self, func: MapCallable[T, R]) -> Map[T, R]: ...
-    def cycle(self, use_cache: bool = True) -> CacheCycle[T]: ...
+    @overload
+    def cycle(self, use_cache: Literal[False]) -> CopyCycle[T]: ...
+    @overload
+    def cycle(self, use_cache: Literal[True] = True) -> CacheCycle[T]: ...
 
 @final
 class Filter(IterInterface[T], Generic[T]):
