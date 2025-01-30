@@ -4,7 +4,7 @@ from collections.abc import AsyncIterator, Iterator, Sequence
 from typing import Any, Generic
 
 from rusty_iterators._versioned_types import TypeVar
-from rusty_iterators.core.interface import IterWrapper, SeqWrapper
+from rusty_iterators.core.wrappers import IterWrapper, SeqWrapper
 
 from ._async import AsyncIterWrapper
 

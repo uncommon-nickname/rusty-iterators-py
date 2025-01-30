@@ -5,7 +5,8 @@ from typing import TYPE_CHECKING, Any, assert_type
 from rusty_iterators import LIter
 
 if TYPE_CHECKING:
-    from rusty_iterators.core.interface import Filter, IterWrapper, Map, SeqWrapper
+    from rusty_iterators.core.interface import Filter, Map
+    from rusty_iterators.core.wrappers import IterWrapper, SeqWrapper
 
 
 def verify_empty_items_iterator_type() -> None:

@@ -16,11 +16,21 @@ def compile_cython() -> None:
             ["rusty_iterators/core/interface.pyx"],
             extra_compile_args=["-march=native", "-O3"],
             libraries=["m"],
-        )
+        ),
+        Extension(
+            "rusty_iterators.core.wrappers",
+            ["rusty_iterators/core/wrappers.pyx"],
+            extra_compile_args=["-march=native", "-O3"],
+            libraries=["m"],
+        ),
     ]
 
     dist = Distribution(
-        {"ext_modules": cythonize(extensions, compiler_directives={"language_level": "3", "binding": True})}
+        {
+            "ext_modules": cythonize(
+                extensions, compiler_directives={"language_level": "3", "binding": True}
+            )
+        }
     )
 
     cmd = build_ext(dist)
@@ -49,7 +59,9 @@ def copy_stub_files() -> None:
 
             for file in files:
                 if file.endswith(".pyi"):
-                    shutil.copyfile(os.path.join(root, file), os.path.join(target_path, file))
+                    shutil.copyfile(
+                        os.path.join(root, file), os.path.join(target_path, file)
+                    )
 
     print("✅ Type stubs copied successfully!")
 
