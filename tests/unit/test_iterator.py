@@ -12,7 +12,7 @@ def test_next_returns_next_element() -> None:
 
 
 def test_next_on_empty_iterator() -> None:
-    it = LIter.from_items()  # type: ignore[var-annotated]
+    it = LIter.from_items()
 
     with pytest.raises(StopIteration):
         it.next()

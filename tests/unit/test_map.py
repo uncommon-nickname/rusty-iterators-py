@@ -18,7 +18,7 @@ def test_next_applies_callable() -> None:
 
 
 def test_next_on_empty_map() -> None:
-    it = LIter.from_items().map(lambda x: x * 2)  # type: ignore[var-annotated]
+    it = LIter.from_items().map(lambda x: x * 2)
 
     with pytest.raises(StopIteration):
         it.next()
