@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, assert_type
 
-from rusty_iterators.lib import LIter
+from rusty_iterators import LIter
 
 if TYPE_CHECKING:
     from rusty_iterators.core.interface import Filter, IterWrapper, Map, SeqWrapper
