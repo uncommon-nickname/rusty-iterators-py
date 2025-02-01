@@ -2,9 +2,11 @@ from __future__ import annotations
 
 import sys
 from collections.abc import AsyncIterator, Iterator, Sequence
-from typing import Any, Generic, NoReturn
+from typing import Any, Generic
 
 from rusty_iterators.core.interface import IterWrapper, SeqWrapper
+
+from ._async import AsyncIterWrapper
 
 # NOTE: 30.01.2025 <@uncommon-nickname>
 # TypeVar contains the `default` argument from Python 3.13. Earlier
@@ -33,5 +35,5 @@ class LIter(Generic[T]):
         return SeqWrapper(s)
 
     @classmethod
-    def from_ait(cls, ait: AsyncIterator[T]) -> NoReturn:
-        raise NotImplementedError
+    def from_ait(cls, ait: AsyncIterator[T]) -> AsyncIterWrapper[T]:
+        return AsyncIterWrapper(ait)

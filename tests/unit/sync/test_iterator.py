@@ -1,6 +1,6 @@
 import pytest
 
-from rusty_iterators.lib import LIter
+from rusty_iterators import LIter
 
 
 def test_next_returns_next_element() -> None:
