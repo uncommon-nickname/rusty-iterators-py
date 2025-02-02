@@ -11,6 +11,18 @@ cdef class IterInterface:
 
     def as_async(self):
         return AsyncIterAdapter(self)
+        
+    def __repr__(self):
+        return self.__str__()
+
+    cpdef next(self):
+        raise NotImplementedError
+    
+    cpdef bint can_be_copied(self):
+        raise NotImplementedError
+    
+    cpdef copy(self):
+        raise NotImplementedError
 
     cpdef collect(self):
         cdef list result = []
@@ -27,33 +39,36 @@ cdef class IterInterface:
     cpdef filter(self, object func):
         return Filter(self, func)
 
-    cpdef next(self):
-        raise NotImplementedError
-
     cpdef map(self, object func):
         return Map(self, func)
 
+    cpdef cycle(self, bint use_cache=True):
+        return CacheCycle(self) if use_cache else CopyCycle(self)
+        
 @cython.final
 cdef class Filter(IterInterface):
-    cdef IterInterface other
-    cdef object func
-
-    def __cinit__(self, IterInterface other, object func):
-        self.other = other
+    def __cinit__(self, IterInterface it, object func):
+        self.it = it
         self.func = func
 
     cpdef next(self):
         cdef object item
         while True:
-            item = self.other.next()
+            item = self.it.next()
             if self.func(item):
                 return item
 
+    cpdef copy(self):
+        return Filter(self.it.copy(), self.func)
+
+    cpdef bint can_be_copied(self):
+        return self.it.can_be_copied()
+
+    def __str__(self):
+        return f"Filter(it={self.it})"
+
 @cython.final
 cdef class Map(IterInterface):
-    cdef IterInterface other
-    cdef object func
-
     def __cinit__(self, IterInterface other, object func):
         self.other = other
         self.func = func
@@ -62,52 +77,65 @@ cdef class Map(IterInterface):
         return self.func(self.other.next())
 
 @cython.final
-cdef class SeqWrapper(IterInterface):
-    cdef object s
-    cdef int ptr
-
-    def __init__(self, object s):
-        self.s = s
+cdef class CacheCycle(IterInterface):
+    def __cinit__(self, IterInterface it):
+        self.it = it
         self.ptr = 0
-
+        self.use_cache = False
+        self.cache = []
+        
     def __str__(self):
-        return f"SeqWrapper(ptr={self.ptr}, s={len(self.s)})"
+        return f"CycleCached(ptr={self.ptr}, cache={len(self.cache)}, it={self.it})"
 
-    def copy(self):
-        return True
+    cpdef bint can_be_copied(self):
+        return self.it.can_be_copied()
 
+    cpdef copy(self):
+        obj = CacheCycle(self.it.copy())
+        obj.cache = self.cache[:]
+        obj.ptr = self.ptr
+        obj.use_cache = self.use_cache
+        return obj        
+    
     cpdef next(self):
+        if self.use_cache:
+            self.ptr = self.ptr % len(self.cache)
+            item = self.cache[self.ptr]
+            self.ptr += 1
+            return item
+        
         try:
-            item = self.s[self.ptr]
-        except IndexError as exc:
-            raise StopIteration from exc
-        self.ptr += 1
-        return item
+            item = self.it.next()
+            self.cache.append(item)
+            return item
+
+        except StopIteration:
+            if len(self.cache) == 0:
+                raise
+
+            self.use_cache = True
+            return self.next()
 
 @cython.final
-cdef class IterWrapper(IterInterface):
-    cdef object it
-
-    def __cinit__(self,object it):
-        self.it = it
-
+cdef class CopyCycle(IterInterface):
+    def __cinit__(self, IterInterface it):
+        self.it = it.copy()
+        self.orig = it
+        
     def __str__(self):
-        return f"IterWrapper(it={self.it})"
+        return f"CycleCopy(it={self.it}, orig={self.orig})"
 
-    def can_be_copied(self) -> bool:
-        if isinstance(self.it, IterInterface):
-            return self.it.can_be_copied()
-        return False
+    cpdef bint can_be_copied(self):
+        return self.it.can_be_copied()
 
-    def copy(self):
-        if isinstance(self.it, IterInterface):
-            return IterWrapper(self.it.copy())
-
-        raise Exception(
-            "Iterator containing a python generator cannot be copied.\n"
-            "Python generators can't be trivially copied, if you really need to create a copy, "
-            "you should collect the generator into a Sequence and create a LIter from it."
-        )
-
+    cpdef copy(self):
+        obj = CopyCycle(self.it.copy())
+        obj.orig = self.orig.copy()
+        return obj
+    
     cpdef next(self):
-        return next(self.it)
+        try:
+            return self.it.next()
+        except StopIteration:
+            self.it = self.orig.copy()
+            return self.it.next()

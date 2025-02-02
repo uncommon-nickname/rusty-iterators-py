@@ -16,7 +16,13 @@ def compile_cython() -> None:
             ["rusty_iterators/core/interface.pyx"],
             extra_compile_args=["-march=native", "-O3"],
             libraries=["m"],
-        )
+        ),
+        Extension(
+            "rusty_iterators.core.wrappers",
+            ["rusty_iterators/core/wrappers.pyx"],
+            extra_compile_args=["-march=native", "-O3"],
+            libraries=["m"],
+        ),
     ]
 
     dist = Distribution(
@@ -37,23 +43,5 @@ def compile_cython() -> None:
     print("✅ Shared libraries (.so) generated.")
 
 
-def copy_stub_files() -> None:
-    stub_src = os.path.join(os.path.dirname(__file__), "stubs", "rusty_iterators")
-    package_dst = os.path.join(os.path.dirname(__file__), "rusty_iterators")
-
-    if os.path.exists(stub_src):
-        for root, _, files in os.walk(stub_src):
-            rel_path = os.path.relpath(root, stub_src)
-            target_path = os.path.join(package_dst, rel_path)
-            os.makedirs(target_path, exist_ok=True)
-
-            for file in files:
-                if file.endswith(".pyi"):
-                    shutil.copyfile(os.path.join(root, file), os.path.join(target_path, file))
-
-    print("✅ Type stubs copied successfully!")
-
-
 if __name__ == "__main__":
     compile_cython()
-    copy_stub_files()
