@@ -1,11 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-<<<<<<< HEAD
-from typing import Any, Generic, TypeAlias, final
-=======
-from typing import Any, Generic, Literal, Self, TypeAlias, final, overload, override
->>>>>>> 732b996 (add type tests)
+from typing import Any, Generic, Literal, TypeAlias, final, overload
 
 from rusty_iterators._versioned_types import Self, TypeVar, override
 from rusty_iterators.lib._async import AsyncIterAdapter
