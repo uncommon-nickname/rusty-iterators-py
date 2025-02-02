@@ -1,3 +1,3 @@
-from rusty_iterators.lib.entrypoint import LIter
+from .entrypoint import LIter
 
-__all__ = ["LIter"]
+__all__ = ("LIter",)
