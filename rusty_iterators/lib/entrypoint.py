@@ -1,22 +1,12 @@
 from __future__ import annotations
 
-import sys
 from collections.abc import AsyncIterator, Iterator, Sequence
 from typing import Any, Generic
 
+from rusty_iterators._versioned_types import TypeVar
 from rusty_iterators.core.interface import IterWrapper, SeqWrapper
 
 from ._async import AsyncIterWrapper
-
-# NOTE: 30.01.2025 <@uncommon-nickname>
-# TypeVar contains the `default` argument from Python 3.13. Earlier
-# versions should use the backported one. We need the `default` to make
-# types work correctly with empty iterators.
-if sys.version_info < (3, 13):
-    from typing_extensions import TypeVar
-else:
-    from typing import TypeVar
-
 
 T = TypeVar("T", default=Any, contravariant=True)
 

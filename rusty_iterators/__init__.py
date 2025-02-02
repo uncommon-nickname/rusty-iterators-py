@@ -1,3 +1,3 @@
 from .lib import LIter
 
-__all__ = ["LIter"]
+__all__ = ("LIter",)

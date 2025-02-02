@@ -1,11 +1,16 @@
 import cython
 
+from rusty_iterators.lib._async import AsyncIterAdapter
+
 cdef class IterInterface:
     def __iter__(self):
         return self
 
     def __next__(self):
         return self.next()
+
+    def as_async(self):
+        return AsyncIterAdapter(self)
 
     cpdef collect(self):
         cdef list result = []
