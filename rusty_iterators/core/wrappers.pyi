@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 import sys
-from collections.abc import Callable
-from typing import Any, Generic, Iterator, Sequence, TypeAlias, final
+from collections.abc import Callable, Sequence
+from typing import Any, Generic, Iterator, TypeAlias, final
 
-from .interface import IterInterface
+from rusty_iterators.core.interface import IterInterface
 
 if sys.version_info < (3, 11):
     pass

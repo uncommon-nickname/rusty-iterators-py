@@ -9,8 +9,5 @@ runner.py
 *.html
 *.egg-info
 
-rusty_iterators/core/*.pyi
-rusty_iterators/lib/*.pyi
-
 build/
 dist/

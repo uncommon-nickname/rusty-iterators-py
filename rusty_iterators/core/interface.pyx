@@ -17,6 +17,12 @@ cdef class IterInterface:
 
     cpdef next(self):
         raise NotImplementedError
+    
+    cpdef bint can_be_copied(self):
+        raise NotImplementedError
+    
+    cpdef copy(self):
+        raise NotImplementedError
 
     cpdef collect(self):
         cdef list result = []
@@ -38,12 +44,9 @@ cdef class IterInterface:
 
     cpdef cycle(self, bint use_cache=True):
         return CacheCycle(self) if use_cache else CopyCycle(self)
-
+        
 @cython.final
 cdef class Filter(IterInterface):
-    cdef IterInterface it
-    cdef object func
-
     def __cinit__(self, IterInterface it, object func):
         self.it = it
         self.func = func
@@ -58,7 +61,7 @@ cdef class Filter(IterInterface):
     cpdef copy(self):
         return Filter(self.it.copy(), self.func)
 
-    cpdef can_be_copied(self):
+    cpdef bint can_be_copied(self):
         return self.it.can_be_copied()
 
     def __str__(self):
@@ -66,9 +69,6 @@ cdef class Filter(IterInterface):
 
 @cython.final
 cdef class Map(IterInterface):
-    cdef IterInterface other
-    cdef object func
-
     def __cinit__(self, IterInterface other, object func):
         self.other = other
         self.func = func
@@ -76,14 +76,8 @@ cdef class Map(IterInterface):
     cpdef next(self):
         return self.func(self.other.next())
 
-
 @cython.final
 cdef class CacheCycle(IterInterface):
-    cdef IterInterface it
-    cdef int ptr
-    cdef bint use_cache
-    cdef list cache
-
     def __cinit__(self, IterInterface it):
         self.it = it
         self.ptr = 0
@@ -93,7 +87,7 @@ cdef class CacheCycle(IterInterface):
     def __str__(self):
         return f"CycleCached(ptr={self.ptr}, cache={len(self.cache)}, it={self.it})"
 
-    cpdef can_be_copied(self):
+    cpdef bint can_be_copied(self):
         return self.it.can_be_copied()
 
     cpdef copy(self):
@@ -122,13 +116,8 @@ cdef class CacheCycle(IterInterface):
             self.use_cache = True
             return self.next()
 
-
-
 @cython.final
 cdef class CopyCycle(IterInterface):
-    cdef IterInterface it
-    cdef IterInterface orig
-
     def __cinit__(self, IterInterface it):
         self.it = it.copy()
         self.orig = it
@@ -136,7 +125,7 @@ cdef class CopyCycle(IterInterface):
     def __str__(self):
         return f"CycleCopy(it={self.it}, orig={self.orig})"
 
-    cpdef can_be_copied(self):
+    cpdef bint can_be_copied(self):
         return self.it.can_be_copied()
 
     cpdef copy(self):

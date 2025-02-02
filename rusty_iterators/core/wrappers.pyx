@@ -1,5 +1,5 @@
 cimport cython
-include "interface.pyx"
+from rusty_iterators.core.interface cimport IterInterface
 
 @cython.final
 cdef class SeqWrapper(IterInterface):
@@ -13,10 +13,10 @@ cdef class SeqWrapper(IterInterface):
     def __str__(self):
         return f"SeqWrapper(ptr={self.ptr}, s={len(self.s)})"
 
-    def can_be_copied(self):
+    cpdef bint can_be_copied(self):
         return True
 
-    def copy(self):
+    cpdef copy(self):
         obj = SeqWrapper(self.s)
         obj.ptr = self.ptr
         return obj
@@ -39,12 +39,12 @@ cdef class IterWrapper(IterInterface):
     def __str__(self):
         return f"IterWrapper(it={self.it})"
 
-    def can_be_copied(self) -> bool:
+    cpdef bint can_be_copied(self):
         if isinstance(self.it, IterInterface):
             return self.it.can_be_copied()
-        return False
+        return False        
 
-    def copy(self):
+    cpdef copy(self):
         if isinstance(self.it, IterInterface):
             return IterWrapper(self.it.copy())
 
