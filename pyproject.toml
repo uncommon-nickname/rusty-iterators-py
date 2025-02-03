@@ -2,9 +2,19 @@
 name = "rusty-iterators"
 version = "0.1.0"
 description = "Rust-like iterators in Python."
-authors = ["Wiktor Nowak <@uncommon-nickname>"]
+authors = ["Wiktor Nowak <@uncommon-nickname>", "Dawid Sielużycki <@Leghart>"]
 readme = "README.md"
 license = "MIT"
+
+include = ["rusty_iterators/**/*"]
+
+[build-system]
+requires = ["cython", "poetry-core", "setuptools"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.build]
+generate-setup-file = false
+script = "build.py"
 
 [tool.poetry.dependencies]
 python = "^3.12"
@@ -16,6 +26,9 @@ pre-commit = "4.0.1"
 pytest = "8.3.4"
 pytest-asyncio = "0.24.0"
 ruff = "0.8.1"
+setuptools = "75.8.0"
+cython = "3.0.11"
+types-setuptools = "75.8.0.20250110"
 
 [tool.ruff]
 line-length = 119
@@ -48,6 +61,10 @@ enable_error_code = [
     "truthy-bool",
 ]
 
+[[tool.mypy.overrides]]
+module = ["cython.*", "Cython.Build"]
+ignore_missing_imports = true
+
 [tool.poe.tasks]
 test = "pytest -s -v tests/"
 mypy = "mypy . --check"
@@ -59,7 +76,3 @@ ci.ignore_fail = "return_non_zero"
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"

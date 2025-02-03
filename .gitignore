@@ -4,3 +4,10 @@ __pycache__
 .ruff_cache
 .venv
 runner.py
+*.so
+*.c
+*.html
+*.egg-info
+
+build/
+dist/
