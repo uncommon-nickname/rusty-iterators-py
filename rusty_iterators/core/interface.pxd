@@ -1,6 +1,7 @@
 cdef class IterInterface:
     cpdef bint can_be_copied(self)
     cpdef object collect(self)
+    cpdef object collect_into(self, object factory)
     cpdef object copy(self)
     cpdef object cycle(self, bint use_cache = *)
     cpdef object filter(self, object func)

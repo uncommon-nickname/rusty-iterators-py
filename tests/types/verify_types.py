@@ -5,8 +5,24 @@ from typing import TYPE_CHECKING, Any, assert_type
 from rusty_iterators import LIter
 
 if TYPE_CHECKING:
+    from collections.abc import Iterator
+
     from rusty_iterators.core.interface import CacheCycle, CopyCycle, Filter, Map
     from rusty_iterators.core.wrappers import IterWrapper, SeqWrapper
+
+
+def verify_all_collect_into_variants() -> None:
+    class CustomBuilder:
+        def __init__(self, val: Iterator[int]) -> None:
+            pass
+
+    it = LIter.from_items(1, 2, 3)
+
+    assert_type(it.collect_into(tuple), tuple[int, ...])
+    assert_type(it.collect_into(list), list[int])
+    assert_type(it.collect_into(set), set[int])
+    assert_type(it.collect_into(frozenset), frozenset[int])
+    assert_type(it.collect_into(CustomBuilder), CustomBuilder)
 
 
 def verify_empty_items_iterator_type() -> None:

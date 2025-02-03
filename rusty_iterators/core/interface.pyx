@@ -19,16 +19,12 @@ cdef class IterInterface:
         raise NotImplementedError
 
     cpdef collect(self):
-        cdef list result = []
-        cdef object item
-
-        while True:
-            try:
-                item = self.next()
-            except StopIteration:
-                break
-            result.append(item)
+        cdef list result
+        result = self.collect_into(list)
         return result
+
+    cpdef collect_into(self, factory):
+        return factory(self)
 
     cpdef copy(self):
         raise NotImplementedError
