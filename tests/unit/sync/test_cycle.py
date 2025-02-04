@@ -20,5 +20,6 @@ def test_when_specified_cycle_returns_cached() -> None:
 
 def test_when_specified_cycle_returns_copy() -> None:
     it = LIter.from_items("a", "b", "c").cycle(use_cache=False)
+
     assert isinstance(it, CopyCycle)
     assert [it.next() for _ in range(7)] == ["a", "b", "c", "a", "b", "c", "a"]
