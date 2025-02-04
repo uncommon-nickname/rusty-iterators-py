@@ -57,6 +57,14 @@ def verify_sequence_iterator_type() -> None:
     assert_type(it.collect(), list[int])
 
 
+def verify_string_sequence_iterator_type() -> None:
+    it = LIter.from_seq("abc")
+
+    assert_type(it, SeqWrapper[str])
+    assert_type(it.next(), str)
+    assert_type(it.collect(), list[str])
+
+
 def verify_iterator_type() -> None:
     it = LIter.from_it(iter(range(10)))
 
