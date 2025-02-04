@@ -7,6 +7,7 @@ cdef class IterInterface:
     cpdef object filter(self, object func)
     cpdef object map(self, object func)
     cpdef object next(self)
+    cpdef object zip(self, IterInterface second)
 
 cdef class Filter(IterInterface):
     cdef IterInterface it
@@ -37,6 +38,15 @@ cdef class CacheCycle(IterInterface):
 cdef class CopyCycle(IterInterface):
     cdef IterInterface it
     cdef IterInterface orig
+
+    cpdef bint can_be_copied(self)
+    cpdef object copy(self)
+    cpdef object next(self)
+
+
+cdef class Zip(IterInterface):
+    cdef IterInterface first
+    cdef IterInterface second
 
     cpdef bint can_be_copied(self)
     cpdef object copy(self)
