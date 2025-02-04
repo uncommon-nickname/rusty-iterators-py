@@ -19,6 +19,11 @@ def test_next_on_empty_iterator() -> None:
 
 
 def test_collect_returns_original_items() -> None:
-    it = LIter.from_items(1, 2, 3)
+    assert LIter.from_items(1, 2, 3).collect() == [1, 2, 3]
 
-    assert it.collect() == [1, 2, 3]
+
+def test_collect_into() -> None:
+    assert LIter.from_items(1, 2, 3).collect_into(tuple) == (1, 2, 3)
+    assert LIter.from_items(1, 2, 3).collect_into(list) == [1, 2, 3]
+    assert LIter.from_items(1, 2, 3).collect_into(set) == {1, 2, 3}
+    assert LIter.from_items(1, 2, 3).collect_into(frozenset) == {1, 2, 3}
