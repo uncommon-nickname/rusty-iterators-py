@@ -41,6 +41,9 @@ cdef class IterInterface:
     cpdef next(self):
         raise NotImplementedError
 
+    cpdef zip(self, IterInterface second):
+        return Zip(self, second)
+
 @cython.final
 cdef class Filter(IterInterface):
     def __cinit__(self, IterInterface it, object func):
@@ -144,3 +147,22 @@ cdef class CopyCycle(IterInterface):
         except StopIteration:
             self.it = self.orig.copy()
             return self.it.next()
+
+
+@cython.final
+cdef class Zip(IterInterface):
+    def __cinit__(self, IterInterface first, IterInterface second):
+        self.first = first
+        self.second = second
+
+    def __str__(self):
+        return f"Zip(first={self.first}, second={self.second})"
+
+    cpdef bint can_be_copied(self):
+        return self.first.can_be_copied() and self.second.can_be_copied()
+
+    cpdef copy(self):
+        return Zip(self.first.copy(), self.second.copy())
+
+    cpdef next(self):
+        return (self.first.next(), self.second.next())
