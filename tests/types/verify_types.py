@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, assert_type
+from typing import TYPE_CHECKING, Any, Never, assert_type
 
 from rusty_iterators import LIter
 
@@ -109,3 +109,19 @@ def verify_zip_iterator_type() -> None:
     assert_type(it, Zip[int, str])
     assert_type(it.next(), tuple[int, str])
     assert_type(it.collect(), list[tuple[int, str]])
+
+
+def verify_unzip_iterator_type() -> None:
+    it = LIter.from_items(1, 2, 3).zip(LIter.from_items("a", "b"))
+
+    assert_type(it.unzip(), tuple[list[int], list[str]])
+
+    other_it = LIter.from_items([1, 2], [3, 4], [5, 6])
+
+    assert_type(other_it.unzip(), tuple[list[int], list[int]])
+
+    unzippable = LIter.from_items(1, 2, 3)
+
+    # Even a simple call to unzip on unzippable type returns a type error
+    # but if someone would force it, then the `Never` type is returned.
+    assert_type(unzippable.unzip(), tuple[list[Never], list[Never]])  # type:ignore[misc]
