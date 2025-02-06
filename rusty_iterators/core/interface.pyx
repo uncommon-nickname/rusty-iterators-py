@@ -41,6 +41,9 @@ cdef class IterInterface:
     cpdef next(self):
         raise NotImplementedError
 
+    cpdef take(self, int amount):
+        return Take(self, amount)
+
     cpdef unzip(self):
         cdef list left = []
         cdef list right = []
@@ -176,3 +179,37 @@ cdef class Zip(IterInterface):
 
     cpdef next(self):
         return (self.first.next(), self.second.next())
+
+@cython.final
+cdef class Take(IterInterface):
+    def __cinit__(self, IterInterface it, int amount):
+        if amount <= 0:
+            raise Exception("You have to `take` at least one item.")
+
+        self.it = it
+        self.amount = amount
+        self.taken = 0
+
+    def __str__(self):
+        return f"Take(amount={self.amount}, taken={self.taken}, it={self.it})"
+
+    cpdef bint can_be_copied(self):
+        return self.it.can_be_copied()
+
+    cpdef copy(self):
+        cdef Take obj
+
+        obj = Take(self.it.copy(), self.amount)
+        obj.taken = self.taken
+
+        return obj
+
+    cpdef next(self):
+        if self.taken == self.amount:
+            raise StopIteration
+
+        cdef object item
+
+        item = self.it.next()
+        self.taken += 1
+        return item

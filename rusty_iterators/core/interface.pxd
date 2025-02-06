@@ -1,3 +1,5 @@
+import cython
+
 cdef class IterInterface:
     cpdef bint can_be_copied(self)
     cpdef object collect(self)
@@ -7,6 +9,7 @@ cdef class IterInterface:
     cpdef object filter(self, object func)
     cpdef object map(self, object func)
     cpdef object next(self)
+    cpdef object take(self, int amount)
     cpdef object unzip(self)
     cpdef object zip(self, IterInterface second)
 
@@ -48,6 +51,16 @@ cdef class CopyCycle(IterInterface):
 cdef class Zip(IterInterface):
     cdef IterInterface first
     cdef IterInterface second
+
+    cpdef bint can_be_copied(self)
+    cpdef object copy(self)
+    cpdef object next(self)
+
+
+cdef class Take(IterInterface):
+    cdef IterInterface it
+    cdef int amount
+    cdef int taken
 
     cpdef bint can_be_copied(self)
     cpdef object copy(self)
