@@ -7,6 +7,7 @@ cdef class IterInterface:
     cpdef object filter(self, object func)
     cpdef object map(self, object func)
     cpdef object next(self)
+    cpdef object unzip(self)
     cpdef object zip(self, IterInterface second)
 
 cdef class Filter(IterInterface):

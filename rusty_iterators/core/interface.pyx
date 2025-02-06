@@ -41,6 +41,16 @@ cdef class IterInterface:
     cpdef next(self):
         raise NotImplementedError
 
+    cpdef unzip(self):
+        cdef list left = []
+        cdef list right = []
+
+        for left_item, right_item in self:
+            left.append(left_item)
+            right.append(right_item)
+
+        return left, right
+
     cpdef zip(self, IterInterface second):
         return Zip(self, second)
 

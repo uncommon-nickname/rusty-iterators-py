@@ -27,3 +27,17 @@ def test_collect_into() -> None:
     assert LIter.from_items(1, 2, 3).collect_into(list) == [1, 2, 3]
     assert LIter.from_items(1, 2, 3).collect_into(set) == {1, 2, 3}
     assert LIter.from_items(1, 2, 3).collect_into(frozenset) == {1, 2, 3}
+
+
+def test_unzip_tuple_iterator() -> None:
+    left, right = LIter.from_items((1, "a"), (2, "b"), (3, "c")).unzip()
+
+    assert left == [1, 2, 3]
+    assert right == ["a", "b", "c"]
+
+
+def test_unzip_list_iterator() -> None:
+    left, right = LIter.from_items([1, 2], [3, 4], [5, 6]).unzip()
+
+    assert left == [1, 3, 5]
+    assert right == [2, 4, 6]
