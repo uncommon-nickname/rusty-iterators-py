@@ -1,5 +1,3 @@
-import cython
-
 cdef class IterInterface:
     cpdef bint can_be_copied(self)
     cpdef object collect(self)
