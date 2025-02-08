@@ -7,6 +7,7 @@ cdef class IterInterface:
     cpdef object filter(self, object func)
     cpdef object map(self, object func)
     cpdef object next(self)
+    cpdef object step_by(self, int step)
     cpdef object take(self, int amount)
     cpdef object unzip(self)
     cpdef object zip(self, IterInterface second)
@@ -45,20 +46,27 @@ cdef class CopyCycle(IterInterface):
     cpdef object copy(self)
     cpdef object next(self)
 
-
-cdef class Zip(IterInterface):
-    cdef IterInterface first
-    cdef IterInterface second
+cdef class StepBy(IterInterface):
+    cdef bint first_take
+    cdef IterInterface it
+    cdef int step_minus_one
 
     cpdef bint can_be_copied(self)
     cpdef object copy(self)
     cpdef object next(self)
 
-
 cdef class Take(IterInterface):
     cdef IterInterface it
     cdef int amount
     cdef int taken
+
+    cpdef bint can_be_copied(self)
+    cpdef object copy(self)
+    cpdef object next(self)
+
+cdef class Zip(IterInterface):
+    cdef IterInterface first
+    cdef IterInterface second
 
     cpdef bint can_be_copied(self)
     cpdef object copy(self)
