@@ -11,6 +11,7 @@ cdef class IterInterface:
     cpdef object take(self, int amount)
     cpdef object unzip(self)
     cpdef object zip(self, IterInterface second)
+    cpdef object chain(self, IterInterface second)
 
 cdef class Filter(IterInterface):
     cdef IterInterface it
@@ -71,3 +72,8 @@ cdef class Zip(IterInterface):
     cpdef bint can_be_copied(self)
     cpdef object copy(self)
     cpdef object next(self)
+
+cdef class Chain(IterInterface):
+    cdef IterInterface first
+    cdef IterInterface second
+    cdef bint use_second
