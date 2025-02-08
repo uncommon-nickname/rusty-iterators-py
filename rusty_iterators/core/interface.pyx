@@ -202,9 +202,12 @@ cdef class StepBy(IterInterface):
     cpdef next(self):
         if self.first_take:
             self.first_take = False
-            return self.it.next()
-        
-        return self.it.advance_by(self.step_minus_one).next()
+            
+        else:
+            self.it.advance_by(self.step_minus_one)
+
+        return self.it.next()
+
 
 @cython.final
 cdef class Take(IterInterface):
