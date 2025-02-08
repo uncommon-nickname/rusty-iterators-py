@@ -26,6 +26,19 @@ cdef class IterInterface:
     cpdef collect_into(self, factory):
         return factory(self)
 
+    cpdef advance_by(self, int n):
+        if n < 0:
+            raise ValueError("Amount to advance by must be greater or equal to 0.")
+        
+        for _ in range(n):
+            try:
+                self.next()
+            except StopIteration:
+                break
+        
+        return self
+
+
     cpdef copy(self):
         raise NotImplementedError
 
@@ -187,15 +200,11 @@ cdef class StepBy(IterInterface):
         return obj
 
     cpdef next(self):
-        # TODO: 08.02.2025 <@uncommon-nickname>
-        # We can use advance_by here, when it is implemented.
-        if not self.first_take:
-            for _ in range(self.step_minus_one):
-                self.it.next()
-        else:
+        if self.first_take:
             self.first_take = False
-
-        return self.it.next()
+            return self.it.next()
+        
+        return self.it.advance_by(self.step_minus_one).next()
 
 @cython.final
 cdef class Take(IterInterface):
