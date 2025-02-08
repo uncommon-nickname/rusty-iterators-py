@@ -18,6 +18,12 @@ cdef class IterInterface:
     cpdef bint can_be_copied(self):
         raise NotImplementedError
 
+    cpdef bint all(self, f=None):
+        return all([f(i) for i in self]) if f else all(self)
+
+    cpdef bint any(self, f=None):
+        return any([f(i) for i in self]) if f else any(self)
+
     cpdef collect(self):
         cdef list result
         result = self.collect_into(list)

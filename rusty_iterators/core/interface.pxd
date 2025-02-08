@@ -7,6 +7,8 @@ cdef class IterInterface:
     cpdef object filter(self, object func)
     cpdef object map(self, object func)
     cpdef object next(self)
+    cpdef bint all(self, object f=*)
+    cpdef bint any(self, object f=*)
     cpdef object step_by(self, int step)
     cpdef object take(self, int amount)
     cpdef object unzip(self)

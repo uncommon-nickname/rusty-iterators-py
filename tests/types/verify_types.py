@@ -7,7 +7,15 @@ from rusty_iterators import LIter
 if TYPE_CHECKING:
     from collections.abc import Iterator
 
-    from rusty_iterators.core.interface import CacheCycle, CopyCycle, Filter, Map, StepBy, Take, Zip
+    from rusty_iterators.core.interface import (
+        CacheCycle,
+        CopyCycle,
+        Filter,
+        Map,
+        StepBy,
+        Take,
+        Zip,
+    )
     from rusty_iterators.core.wrappers import IterWrapper, SeqWrapper
 
 
@@ -141,3 +149,13 @@ def verify_step_by_iterator_type() -> None:
     assert_type(it, StepBy[int])
     assert_type(it.next(), int)
     assert_type(it.collect(), list[int])
+
+
+def verify_all_type() -> None:
+    assert_type(LIter.from_items(1, 2, 3).all(), bool)
+    assert_type(LIter.from_items(1, 2, 3).all(lambda x: x > 2), bool)
+
+
+def verify_any_type() -> None:
+    assert_type(LIter.from_items(1, 2, 3).any(), bool)
+    assert_type(LIter.from_items(1, 2, 3).any(lambda x: x > 2), bool)
