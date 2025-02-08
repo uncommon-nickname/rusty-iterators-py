@@ -5,8 +5,7 @@ from rusty_iterators import LIter
 
 def test_advance_by() -> None:
     it = LIter.from_items(1, 2, 3, 4).map(lambda x: x + 2).advance_by(2)
-    for item in [5, 6]:
-        assert it.next() == item
+    assert it.collect() == [5, 6]
 
 
 def test_advance_by_depleted() -> None:
