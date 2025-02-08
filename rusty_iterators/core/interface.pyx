@@ -41,6 +41,9 @@ cdef class IterInterface:
     cpdef next(self):
         raise NotImplementedError
 
+    cpdef step_by(self, int step):
+        return StepBy(self, step)
+
     cpdef take(self, int amount):
         return Take(self, amount)
 
@@ -161,6 +164,69 @@ cdef class CopyCycle(IterInterface):
             self.it = self.orig.copy()
             return self.it.next()
 
+@cython.final
+cdef class StepBy(IterInterface):
+    def __cinit__(self, IterInterface it, step: int) -> None:
+        if step <= 0:
+            raise ValueError("Step has to be greater than zero.")
+
+        self.first_take = True
+        self.it = it
+        self.step_minus_one = step - 1
+
+    def __str__(self):
+        return f"StepBy(first_take={self.first_take}, step={self.step_minus_one + 1}, it={self.it})"
+
+    cpdef bint can_be_copied(self):
+        return self.it.can_be_copied()
+
+    cpdef copy(self):
+        cdef StepBy obj
+        obj = StepBy(self.it.copy(), self.step_minus_one + 1)
+        obj.first_take = self.first_take
+        return obj
+
+    cpdef next(self):
+        # TODO: 08.02.2025 <@uncommon-nickname>
+        # We can use advance_by here, when it is implemented.
+        if not self.first_take:
+            for _ in range(self.step_minus_one):
+                self.it.next()
+        else:
+            self.first_take = False
+
+        return self.it.next()
+
+@cython.final
+cdef class Take(IterInterface):
+    def __cinit__(self, IterInterface it, int amount):
+        if amount <= 0:
+            raise ValueError("You have to `take` at least one item.")
+
+        self.it = it
+        self.amount = amount
+        self.taken = 0
+
+    def __str__(self):
+        return f"Take(amount={self.amount}, taken={self.taken}, it={self.it})"
+
+    cpdef bint can_be_copied(self):
+        return self.it.can_be_copied()
+
+    cpdef copy(self):
+        cdef Take obj
+        obj = Take(self.it.copy(), self.amount)
+        obj.taken = self.taken
+        return obj
+
+    cpdef next(self):
+        if self.taken == self.amount:
+            raise StopIteration
+
+        cdef object item
+        item = self.it.next()
+        self.taken += 1
+        return item
 
 @cython.final
 cdef class Zip(IterInterface):
@@ -179,37 +245,3 @@ cdef class Zip(IterInterface):
 
     cpdef next(self):
         return (self.first.next(), self.second.next())
-
-@cython.final
-cdef class Take(IterInterface):
-    def __cinit__(self, IterInterface it, int amount):
-        if amount <= 0:
-            raise Exception("You have to `take` at least one item.")
-
-        self.it = it
-        self.amount = amount
-        self.taken = 0
-
-    def __str__(self):
-        return f"Take(amount={self.amount}, taken={self.taken}, it={self.it})"
-
-    cpdef bint can_be_copied(self):
-        return self.it.can_be_copied()
-
-    cpdef copy(self):
-        cdef Take obj
-
-        obj = Take(self.it.copy(), self.amount)
-        obj.taken = self.taken
-
-        return obj
-
-    cpdef next(self):
-        if self.taken == self.amount:
-            raise StopIteration
-
-        cdef object item
-
-        item = self.it.next()
-        self.taken += 1
-        return item
