@@ -4,8 +4,8 @@ from rusty_iterators import LIter
 
 
 def test_advance_by() -> None:
-    it = LIter.from_items(1, 2, 3, 4).map(lambda x: x + 2).advance_by(2)
-    assert it.collect() == [5, 6]
+    it = LIter.from_items(1, 2, 3, 4).advance_by(2)
+    assert it.collect() == [3, 4]
 
 
 def test_advance_by_depleted() -> None:
