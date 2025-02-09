@@ -12,17 +12,17 @@ cdef class IterInterface:
     def __repr__(self):
         return self.__str__()
 
+    def all(self, f=None):
+        return all(f(i) for i in self) if f else all(self)
+
+    def any(self, f=None):
+        return any(f(i) for i in self) if f else any(self)
+
     def as_async(self):
         return AsyncIterAdapter(self)
 
     cpdef bint can_be_copied(self):
         raise NotImplementedError
-
-    cpdef bint all(self, f=None):
-        return all([f(i) for i in self]) if f else all(self)
-
-    cpdef bint any(self, f=None):
-        return any([f(i) for i in self]) if f else any(self)
 
     cpdef collect(self):
         cdef list result
