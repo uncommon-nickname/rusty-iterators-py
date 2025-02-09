@@ -41,3 +41,11 @@ def test_unzip_list_iterator() -> None:
 
     assert left == [1, 3, 5]
     assert right == [2, 4, 6]
+
+
+def test_sum_returns_summed_items() -> None:
+    assert LIter.from_items(1, 2, 3).sum() == 6
+
+
+def test_sum_empty_iterator() -> None:
+    assert LIter.from_items().sum() == 0
