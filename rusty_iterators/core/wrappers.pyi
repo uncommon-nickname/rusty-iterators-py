@@ -6,7 +6,7 @@ from typing import Any, Generic, final
 from rusty_iterators._versioned_types import TypeVar
 from rusty_iterators.core.interface import IterInterface
 
-T = TypeVar("T", default=Any, covariant=True)
+T = TypeVar("T", default=Any)
 
 @final
 class SeqWrapper(IterInterface[T], Generic[T]):
