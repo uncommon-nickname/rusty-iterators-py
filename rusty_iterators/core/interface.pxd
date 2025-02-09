@@ -35,6 +35,11 @@ cdef class StepBy(IterInterface):
     cdef IterInterface it
     cdef int step_minus_one
 
+cdef class Take(IterInterface):
+    cdef IterInterface it
+    cdef int taken
+    cdef int amount
+
 cdef class Zip(IterInterface):
     cdef IterInterface first
     cdef IterInterface second
