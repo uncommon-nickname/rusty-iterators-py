@@ -9,8 +9,10 @@ if TYPE_CHECKING:
 
     from rusty_iterators.core.interface import (
         CacheCycle,
+        CacheMovingWindow,
         Chain,
         CopyCycle,
+        CopyMovingWindow,
         Filter,
         Map,
         StepBy,
@@ -179,3 +181,19 @@ def verify_chain_type() -> None:
 
     assert_type(it, Chain[str])
     assert_type(it.next(), str)
+
+
+def verify_cache_moving_window_iterator_type() -> None:
+    it = LIter.from_items(1, 2, 3).moving_window(2)
+
+    assert_type(it, CacheMovingWindow[int])
+    assert_type(it.next(), list[int])
+    assert_type(it.collect(), list[list[int]])
+
+
+def verify_copy_moving_window_iterator_type() -> None:
+    it = LIter.from_items(1, 2, 3).moving_window(2, use_cache=False)
+
+    assert_type(it, CopyMovingWindow[int])
+    assert_type(it.next(), list[int])
+    assert_type(it.collect(), list[list[int]])
