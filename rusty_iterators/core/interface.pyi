@@ -50,6 +50,7 @@ class IterInterface(Generic[T]):
     @overload
     def unzip(self: IterInterface[tuple[R, P]]) -> tuple[list[R], list[P]]: ...
     def zip(self, second: IterInterface[R]) -> Zip[T, R]: ...
+    def chain(self, second: IterInterface[T]) -> Chain[T]: ...
 
 @final
 class Filter(IterInterface[T], Generic[T]):
@@ -77,4 +78,8 @@ class Take(IterInterface[T], Generic[T]):
 
 @final
 class Zip(IterInterface[ZipItem[T, R]], Generic[T, R]):
+    def __init__(self, first: IterInterface[T], second: IterInterface[R]) -> None: ...
+
+@final
+class Chain(IterInterface[T], Generic[T]):
     def __init__(self, first: IterInterface[T], second: IterInterface[R]) -> None: ...
