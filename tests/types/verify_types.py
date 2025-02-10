@@ -7,7 +7,17 @@ from rusty_iterators import LIter
 if TYPE_CHECKING:
     from collections.abc import Iterator
 
-    from rusty_iterators.core.interface import CacheCycle, CopyCycle, Filter, Map, StepBy, Take, Zip
+    from rusty_iterators.core.interface import (
+        CacheCycle,
+        CacheMovingWindow,
+        CopyCycle,
+        CopyMovingWindow,
+        Filter,
+        Map,
+        StepBy,
+        Take,
+        Zip,
+    )
     from rusty_iterators.core.wrappers import IterWrapper, SeqWrapper
 
 
@@ -141,3 +151,19 @@ def verify_step_by_iterator_type() -> None:
     assert_type(it, StepBy[int])
     assert_type(it.next(), int)
     assert_type(it.collect(), list[int])
+
+
+def verify_cache_moving_window_iterator_type() -> None:
+    it = LIter.from_items(1, 2, 3).moving_window(2)
+
+    assert_type(it, CacheMovingWindow[int])
+    assert_type(it.next(), list[int])
+    assert_type(it.collect(), list[list[int]])
+
+
+def verify_copy_moving_window_iterator_type() -> None:
+    it = LIter.from_items(1, 2, 3).moving_window(2, use_cache=False)
+
+    assert_type(it, CopyMovingWindow[int])
+    assert_type(it.next(), list[int])
+    assert_type(it.collect(), list[list[int]])
