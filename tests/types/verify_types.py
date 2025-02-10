@@ -133,9 +133,7 @@ def verify_unzip_iterator_type() -> None:
 
     # Even a simple call to unzip on unzippable type returns a type error
     # but if someone would force it, then the `Never` type is returned.
-    assert_type(
-        unzippable.unzip(), tuple[list[Never], list[Never]]
-    )  # type:ignore[misc]
+    assert_type(unzippable.unzip(), tuple[list[Never], list[Never]])  # type:ignore[misc]
 
 
 def verify_take_iterator_type() -> None:
