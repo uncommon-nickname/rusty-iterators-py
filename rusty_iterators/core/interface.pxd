@@ -10,6 +10,7 @@ cdef class IterInterface:
     cpdef object map(self, object func)
     cpdef object next(self)
     cpdef object step_by(self, int step)
+    cpdef object sum(self)
     cpdef object take(self, int amount)
     cpdef object unzip(self)
     cpdef object zip(self, IterInterface second)
