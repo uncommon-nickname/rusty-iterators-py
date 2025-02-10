@@ -9,6 +9,7 @@ if TYPE_CHECKING:
 
     from rusty_iterators.core.interface import (
         CacheCycle,
+        Chain,
         CopyCycle,
         Filter,
         Map,
@@ -132,7 +133,9 @@ def verify_unzip_iterator_type() -> None:
 
     # Even a simple call to unzip on unzippable type returns a type error
     # but if someone would force it, then the `Never` type is returned.
-    assert_type(unzippable.unzip(), tuple[list[Never], list[Never]])  # type:ignore[misc]
+    assert_type(
+        unzippable.unzip(), tuple[list[Never], list[Never]]
+    )  # type:ignore[misc]
 
 
 def verify_take_iterator_type() -> None:
@@ -159,3 +162,17 @@ def verify_all_type() -> None:
 def verify_any_type() -> None:
     assert_type(LIter.from_items(1, 2, 3).any(), bool)
     assert_type(LIter.from_items(1, 2, 3).any(lambda x: x > 2), bool)
+
+
+def verify_advance_by_type() -> None:
+    it = LIter.from_items(1, 2, 3).advance_by(1)
+
+    assert_type(it, SeqWrapper[int])
+    assert_type(it.next(), int)
+
+
+def verify_chain_type() -> None:
+    it = LIter.from_seq("abc").chain(LIter.from_seq("def"))
+
+    assert_type(it, Chain[str])
+    assert_type(it.next(), str)

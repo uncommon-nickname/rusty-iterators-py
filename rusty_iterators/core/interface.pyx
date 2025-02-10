@@ -32,6 +32,19 @@ cdef class IterInterface:
     cpdef collect_into(self, factory):
         return factory(self)
 
+    cpdef advance_by(self, int n):
+        if n < 0:
+            raise ValueError("Amount to advance by must be greater or equal to 0.")
+        
+        for _ in range(n):
+            try:
+                self.next()
+            except StopIteration:
+                break
+        
+        return self
+
+
     cpdef copy(self):
         raise NotImplementedError
 
@@ -65,6 +78,9 @@ cdef class IterInterface:
 
     cpdef zip(self, IterInterface second):
         return Zip(self, second)
+
+    cpdef chain(self, IterInterface second):
+        return Chain(self, second)
 
 @cython.final
 cdef class Filter(IterInterface):
@@ -193,15 +209,14 @@ cdef class StepBy(IterInterface):
         return obj
 
     cpdef next(self):
-        # TODO: 08.02.2025 <@uncommon-nickname>
-        # We can use advance_by here, when it is implemented.
-        if not self.first_take:
-            for _ in range(self.step_minus_one):
-                self.it.next()
-        else:
+        if self.first_take:
             self.first_take = False
+            
+        else:
+            self.it.advance_by(self.step_minus_one)
 
         return self.it.next()
+
 
 @cython.final
 cdef class Take(IterInterface):
@@ -251,3 +266,32 @@ cdef class Zip(IterInterface):
 
     cpdef next(self):
         return (self.first.next(), self.second.next())
+
+@cython.final
+cdef class Chain(IterInterface):
+    def __cinit__(self, IterInterface first, IterInterface second):
+        self.first = first
+        self.second = second
+        self.use_second = False
+
+    def __str__(self):
+        return f"Chain(use_second={self.use_second}, first={self.first}, second={self.second})"
+
+    cpdef bint can_be_copied(self):
+        return self.first.can_be_copied() and self.second.can_be_copied()
+
+    cpdef copy(self):
+        obj = Chain(self.first.copy(), self.second.copy())
+        obj.use_second = self.use_second
+        return obj
+
+    cpdef next(self):
+        if self.use_second:
+            return self.second.next()
+        
+        try:
+            return self.first.next()
+            
+        except StopIteration:
+            self.use_second = True
+            return self.next()
