@@ -152,6 +152,13 @@ def verify_step_by_iterator_type() -> None:
     assert_type(it.collect(), list[int])
 
 
+def verify_advance_by_type() -> None:
+    it = LIter.from_items(1, 2, 3).advance_by(1)
+
+    assert_type(it, SeqWrapper[int])
+    assert_type(it.next(), int)
+
+
 def verify_chain_type() -> None:
     it = LIter.from_seq("abc").chain(LIter.from_seq("def"))
 

@@ -1,4 +1,5 @@
 cdef class IterInterface:
+    cpdef object advance_by(self, int n)
     cpdef bint can_be_copied(self)
     cpdef object chain(self, IterInterface second)
     cpdef object collect(self)
