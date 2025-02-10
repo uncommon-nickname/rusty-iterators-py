@@ -9,6 +9,7 @@ if TYPE_CHECKING:
 
     from rusty_iterators.core.interface import (
         CacheCycle,
+        Chain,
         CopyCycle,
         Filter,
         Map,
@@ -156,3 +157,10 @@ def verify_advance_by_type() -> None:
 
     assert_type(it, SeqWrapper[int])
     assert_type(it.next(), int)
+
+
+def verify_chain_type() -> None:
+    it = LIter.from_seq("abc").chain(LIter.from_seq("def"))
+
+    assert_type(it, Chain[str])
+    assert_type(it.next(), str)

@@ -1,6 +1,7 @@
 cdef class IterInterface:
     cpdef object advance_by(self, int n)
     cpdef bint can_be_copied(self)
+    cpdef object chain(self, IterInterface second)
     cpdef object collect(self)
     cpdef object collect_into(self, object factory)
     cpdef object copy(self)
@@ -44,3 +45,8 @@ cdef class Take(IterInterface):
 cdef class Zip(IterInterface):
     cdef IterInterface first
     cdef IterInterface second
+
+cdef class Chain(IterInterface):
+    cdef IterInterface first
+    cdef IterInterface second
+    cdef bint use_second
