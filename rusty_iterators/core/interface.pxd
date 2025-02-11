@@ -8,6 +8,7 @@ cdef class IterInterface:
     cpdef object cycle(self, bint use_cache = *)
     cpdef object filter(self, object func)
     cpdef object map(self, object func)
+    cpdef object moving_window(self, int size, bint use_cache = *)
     cpdef object next(self)
     cpdef object step_by(self, int step)
     cpdef object sum(self)
@@ -29,9 +30,20 @@ cdef class CacheCycle(IterInterface):
     cdef bint use_cache
     cdef list cache
 
+cdef class CacheMovingWindow(IterInterface):
+    cdef IterInterface it
+    cdef int size
+    cdef list cache
+    cdef int ptr
+
 cdef class CopyCycle(IterInterface):
     cdef IterInterface it
     cdef IterInterface orig
+
+cdef class CopyMovingWindow(IterInterface):
+    cdef IterInterface it
+    cdef IterInterface orig
+    cdef int size
 
 cdef class StepBy(IterInterface):
     cdef bint first_take
