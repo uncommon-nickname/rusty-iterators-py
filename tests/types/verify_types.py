@@ -40,6 +40,7 @@ def verify_empty_items_iterator_type() -> None:
     assert_type(it, SeqWrapper[Any])
     assert_type(it.next(), Any)
     assert_type(it.collect(), list[Any])
+    assert_type(it.sum(), Any)
 
 
 def verify_items_iterator_type() -> None:
@@ -48,6 +49,7 @@ def verify_items_iterator_type() -> None:
     assert_type(it, SeqWrapper[int])
     assert_type(it.next(), int)
     assert_type(it.collect(), list[int])
+    assert_type(it.sum(), int)
 
 
 def verify_empty_sequence_iterator_type() -> None:
@@ -56,6 +58,7 @@ def verify_empty_sequence_iterator_type() -> None:
     assert_type(it, SeqWrapper[Any])
     assert_type(it.next(), Any)
     assert_type(it.collect(), list[Any])
+    assert_type(it.sum(), Any)
 
 
 def verify_sequence_iterator_type() -> None:
@@ -64,6 +67,7 @@ def verify_sequence_iterator_type() -> None:
     assert_type(it, SeqWrapper[int])
     assert_type(it.next(), int)
     assert_type(it.collect(), list[int])
+    assert_type(it.sum(), int)
 
 
 def verify_string_sequence_iterator_type() -> None:
@@ -72,6 +76,7 @@ def verify_string_sequence_iterator_type() -> None:
     assert_type(it, SeqWrapper[str])
     assert_type(it.next(), str)
     assert_type(it.collect(), list[str])
+    assert_type(it.sum(), str)
 
 
 def verify_iterator_type() -> None:
