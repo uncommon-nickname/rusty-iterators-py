@@ -35,13 +35,13 @@ cdef class IterInterface:
     cpdef advance_by(self, int n):
         if n < 0:
             raise ValueError("Amount to advance by must be greater or equal to 0.")
-        
+
         for _ in range(n):
             try:
                 self.next()
             except StopIteration:
                 break
-        
+
         return self
 
 
@@ -53,6 +53,11 @@ cdef class IterInterface:
 
     cpdef filter(self, object func):
         return Filter(self, func)
+
+    cpdef fold(self, object init, object func):
+        for item in self:
+            init = func(init, item)
+        return init
 
     cpdef map(self, object func):
         return Map(self, func)
@@ -300,7 +305,7 @@ cdef class StepBy(IterInterface):
     cpdef next(self):
         if self.first_take:
             self.first_take = False
-            
+
         else:
             self.it.advance_by(self.step_minus_one)
 
@@ -377,10 +382,10 @@ cdef class Chain(IterInterface):
     cpdef next(self):
         if self.use_second:
             return self.second.next()
-        
+
         try:
             return self.first.next()
-            
+
         except StopIteration:
             self.use_second = True
             return self.next()

@@ -52,6 +52,7 @@ def verify_items_iterator_type() -> None:
     assert_type(it.next(), int)
     assert_type(it.collect(), list[int])
     assert_type(it.sum(), int)
+    assert_type(it.fold("", lambda acc, item: acc + str(item)), str)
 
 
 def verify_empty_sequence_iterator_type() -> None:

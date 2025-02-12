@@ -49,3 +49,11 @@ def test_sum_returns_summed_items() -> None:
 
 def test_sum_empty_iterator() -> None:
     assert LIter.from_items().sum() == 0
+
+
+def test_sum_iterator_using_fold() -> None:
+    assert LIter.from_items(1, 2, 3, 4).fold(0, lambda acc, x: acc + x) == 10
+
+
+def test_build_accumulated_string_with_fold() -> None:
+    assert LIter.from_items(1, 2, 3, 4).fold("0", lambda acc, x: f"({acc} + {x})") == "((((0 + 1) + 2) + 3) + 4)"
