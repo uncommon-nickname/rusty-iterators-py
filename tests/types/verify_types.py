@@ -14,6 +14,7 @@ if TYPE_CHECKING:
         CopyCycle,
         CopyMovingWindow,
         Filter,
+        Flatten,
         Map,
         StepBy,
         Take,
@@ -198,3 +199,11 @@ def verify_copy_moving_window_iterator_type() -> None:
     assert_type(it, CopyMovingWindow[int])
     assert_type(it.next(), list[int])
     assert_type(it.collect(), list[list[int]])
+
+
+def verify_flatten_type() -> None:
+    it = LIter.from_items([1, 2], [3, 4]).flatten()
+
+    assert_type(it, Flatten[int])
+    assert_type(it.next(), int)
+    assert_type(it.collect(), list[int])

@@ -6,6 +6,7 @@ cdef class IterInterface:
     cpdef object collect_into(self, object factory)
     cpdef object copy(self)
     cpdef object cycle(self, bint use_cache = *)
+    cpdef object flatten(self)
     cpdef object filter(self, object func)
     cpdef object fold(self, object init, object func)
     cpdef object map(self, object func)
@@ -20,6 +21,11 @@ cdef class IterInterface:
 cdef class Filter(IterInterface):
     cdef IterInterface it
     cdef object func
+
+cdef class Flatten(IterInterface):
+    cdef IterInterface it
+    cdef int ptr
+    cdef list cache
 
 cdef class Map(IterInterface):
     cdef IterInterface it
