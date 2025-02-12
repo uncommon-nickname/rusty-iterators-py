@@ -11,12 +11,13 @@ T_co = TypeVar("T_co", default=Any, covariant=True)
 R = TypeVar("R", default=Any)
 P = TypeVar("P", default=Any)
 
-EnumerateItem: TypeAlias = tuple[int, R]
-FilterCallable: TypeAlias = Callable[[T], bool]
-MapCallable: TypeAlias = Callable[[T], R]
-ZipItem: TypeAlias = tuple[T, R]
 AggCallable: TypeAlias = Callable[[T], bool]
+FilterCallable: TypeAlias = Callable[[T], bool]
 FoldCallable: TypeAlias = Callable[[R, T], R]
+MapCallable: TypeAlias = Callable[[T], R]
+
+EnumerateItem: TypeAlias = tuple[int, R]
+ZipItem: TypeAlias = tuple[T, R]
 
 class BuildableFromIterator(Protocol[T_co]):
     def __init__(self, iterator: Iterator[T_co]) -> None: ...
