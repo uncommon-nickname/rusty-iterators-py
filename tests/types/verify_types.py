@@ -206,3 +206,4 @@ def verify_enumerate_type() -> None:
 
     assert_type(it, Enumerate[str])
     assert_type(it.next(), tuple[int, str])
+    assert_type(it.collect(), list[tuple[int, str]])
