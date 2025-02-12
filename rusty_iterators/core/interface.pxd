@@ -6,6 +6,7 @@ cdef class IterInterface:
     cpdef object collect_into(self, object factory)
     cpdef object copy(self)
     cpdef object cycle(self, bint use_cache = *)
+    cpdef object enumerate(self)
     cpdef object filter(self, object func)
     cpdef object fold(self, object init, object func)
     cpdef object map(self, object func)
@@ -16,6 +17,10 @@ cdef class IterInterface:
     cpdef object take(self, int amount)
     cpdef object unzip(self)
     cpdef object zip(self, IterInterface second)
+
+cdef class Enumerate(IterInterface):
+    cdef IterInterface it
+    cdef int curr_idx
 
 cdef class Filter(IterInterface):
     cdef IterInterface it
