@@ -44,12 +44,14 @@ cdef class IterInterface:
 
         return self
 
-
     cpdef copy(self):
         raise NotImplementedError
 
     cpdef cycle(self, bint use_cache=True):
         return CacheCycle(self) if use_cache else CopyCycle(self)
+
+    cpdef enumerate(self):
+        return Enumerate(self)
 
     cpdef filter(self, object func):
         return Filter(self, func)
@@ -99,6 +101,34 @@ cdef class IterInterface:
 
     cpdef chain(self, IterInterface second):
         return Chain(self, second)
+
+@cython.final
+cdef class Enumerate(IterInterface):
+    def __cinit__(self, IterInterface it):
+        self.it = it
+        self.curr_idx = 0
+
+    def __str__(self):
+        return f"Enumerate(curr_idx={self.curr_idx}, it={self.it})"
+
+    cpdef bint can_be_copied(self):
+        return self.it.can_be_copied()
+
+    cpdef copy(self):
+        cdef Enumerate obj
+
+        obj = Enumerate(self.it.copy())
+        obj.curr_idx = self.curr_idx
+        return obj
+
+    cpdef next(self):
+        cdef object item
+     
+        item = self.it.next()
+        result = (self.curr_idx, item)
+        self.curr_idx += 1
+        return result
+  
 
 @cython.final
 cdef class Filter(IterInterface):
