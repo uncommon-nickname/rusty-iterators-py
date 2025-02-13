@@ -13,6 +13,7 @@ if TYPE_CHECKING:
         Chain,
         CopyCycle,
         CopyMovingWindow,
+        Enumerate,
         Filter,
         Map,
         StepBy,
@@ -198,3 +199,11 @@ def verify_copy_moving_window_iterator_type() -> None:
     assert_type(it, CopyMovingWindow[int])
     assert_type(it.next(), list[int])
     assert_type(it.collect(), list[list[int]])
+
+
+def verify_enumerate_type() -> None:
+    it = LIter.from_items("a", "b").enumerate()
+
+    assert_type(it, Enumerate[str])
+    assert_type(it.next(), tuple[int, str])
+    assert_type(it.collect(), list[tuple[int, str]])
