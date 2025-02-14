@@ -2,6 +2,9 @@ import cython
 
 from rusty_iterators.lib._async import AsyncIterAdapter
 
+cdef object _aggregate_sum(object acc, object x):
+    return acc + x
+
 cdef class IterInterface:
     def __iter__(self):
         return self
@@ -70,15 +73,17 @@ cdef class IterInterface:
     cpdef next(self):
         raise NotImplementedError
 
+    cpdef reduce(self, object func):
+        cdef object init = self.next()
+        return self.fold(init, func)
+
     cpdef step_by(self, int step):
         return StepBy(self, step)
 
     cpdef sum(self):
-        # TODO: 09.02.2025 <@uncommon-nickname>
-        # I don't like this, sum of empty iterator returns int `0`,
-        # which is meh, should be moved to `fold` or `reduce` when
-        # actually implemented.
-        return sum(self)
+        # NOTE: 14.02.2025 <@uncommon-nickname>
+        # Closure functions are not yet supported by Cython transpiler.
+        return self.reduce(_aggregate_sum)
 
     cpdef take(self, int amount):
         return Take(self, amount)
@@ -120,12 +125,12 @@ cdef class Enumerate(IterInterface):
 
     cpdef next(self):
         cdef object item
-     
+
         item = self.it.next()
         result = (self.curr_idx, item)
         self.curr_idx += 1
         return result
-  
+
 
 @cython.final
 cdef class Filter(IterInterface):
@@ -335,7 +340,6 @@ cdef class StepBy(IterInterface):
     cpdef next(self):
         if self.first_take:
             self.first_take = False
-
         else:
             self.it.advance_by(self.step_minus_one)
 
