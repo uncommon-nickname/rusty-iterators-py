@@ -5,6 +5,9 @@ from rusty_iterators.lib._async import AsyncIterAdapter
 cdef object _aggregate_sum(object acc, object x):
     return acc + x
 
+cdef object _persist_last_item(object _, object x):
+    return x
+
 cdef class IterInterface:
     def __iter__(self):
         return self
@@ -66,6 +69,11 @@ cdef class IterInterface:
         for item in self:
             init = func(init, item)
         return init
+
+    cpdef last(self):
+        # NOTE: 15.02.2025 <@uncommon-nickname>
+        # This should probably be done better in the future.
+        return self.reduce(_persist_last_item)
 
     cpdef map(self, object func):
         return Map(self, func)
