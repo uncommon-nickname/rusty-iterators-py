@@ -62,3 +62,12 @@ def test_build_accumulated_string_with_fold() -> None:
 
 def test_sum_iterator_using_reduce() -> None:
     assert LIter.from_items(1, 2, 3, 4).reduce(lambda acc, x: acc + x) == 10
+
+
+def test_nth_returns_correct_element() -> None:
+    assert LIter.from_items(1, 2, 3).nth(2) == 3
+
+
+def test_nth_throws_when_size_exceeded() -> None:
+    with pytest.raises(StopIteration):
+        LIter.from_items(1, 2, 3).nth(3)
