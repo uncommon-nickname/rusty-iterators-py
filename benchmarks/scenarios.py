@@ -45,3 +45,13 @@ def benchmark_rusty_iterators_cache_cycle(arg: Iterable[int]) -> None:
 def benchmark_itertools_cycle(arg: Iterable[int]) -> None:
     it = cycle(arg)
     _ = [next(it) for _ in range(1_000_000)]
+
+
+@BenchmarkManager.register(arg=[[i, i * 2] for i in range(1_000_000)])
+def benchmark_rusty_iterators_flatten(arg: Iterable[list[int]]) -> None:
+    _ = LIter.from_items(*arg).flatten().collect()
+
+
+@BenchmarkManager.register(arg=[[i, i * 2] for i in range(1_000_000)])
+def benchmark_stdlib_flatten(arg: Iterable[list[int]]) -> None:
+    _ = [el for sub in arg for el in sub]
