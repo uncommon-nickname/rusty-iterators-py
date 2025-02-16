@@ -13,6 +13,7 @@ cdef class IterInterface:
     cpdef object map(self, object func)
     cpdef object moving_window(self, int size, bint use_cache = *)
     cpdef object next(self)
+    cpdef object nth(self, int n)
     cpdef object reduce(self, object func)
     cpdef object step_by(self, int step)
     cpdef object sum(self)

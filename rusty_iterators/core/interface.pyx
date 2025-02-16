@@ -76,6 +76,9 @@ cdef class IterInterface:
     cpdef next(self):
         raise NotImplementedError
 
+    cpdef nth(self, int n):
+        return self.advance_by(n).next()
+
     cpdef reduce(self, object func):
         cdef object init = self.next()
         return self.fold(init, func)
