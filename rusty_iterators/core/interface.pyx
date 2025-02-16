@@ -59,6 +59,9 @@ cdef class IterInterface:
     cpdef filter(self, object func):
         return Filter(self, func)
 
+    cpdef flatten(self):
+        return Flatten(self)
+
     cpdef fold(self, object init, object func):
         for item in self:
             init = func(init, item)
@@ -153,6 +156,41 @@ cdef class Filter(IterInterface):
             item = self.it.next()
             if self.func(item):
                 return item
+
+@cython.final
+cdef class Flatten(IterInterface):
+    def __cinit__(self, IterInterface it):
+        self.it = it
+        self.ptr = 0
+        self.cache = []
+
+    def __str__(self):
+        return f"Flatten(it={self.it})"
+
+    cpdef bint can_be_copied(self):
+        return self.it.can_be_copied()
+
+    cpdef copy(self):
+        obj = Flatten(self.it.copy())
+        obj.cache = self.cache
+        obj.ptr = self.ptr
+
+        return obj
+
+    cpdef next(self):
+        cdef object item
+        cdef object indexable_item
+        
+        if self.cache and self.ptr < len(self.cache):
+            item = self.cache[self.ptr]
+            self.ptr += 1
+            return item
+
+        self.ptr = 0
+        indexable_item = self.it.next()
+        self.cache = indexable_item[1:]
+        return indexable_item[0]
+             
 
 @cython.final
 cdef class Map(IterInterface):

@@ -15,6 +15,7 @@ if TYPE_CHECKING:
         CopyMovingWindow,
         Enumerate,
         Filter,
+        Flatten,
         Map,
         StepBy,
         Take,
@@ -208,3 +209,11 @@ def verify_enumerate_type() -> None:
     assert_type(it, Enumerate[str])
     assert_type(it.next(), tuple[int, str])
     assert_type(it.collect(), list[tuple[int, str]])
+
+
+def verify_flatten_type() -> None:
+    it = LIter.from_items([1, 2], [3, 4]).flatten()
+
+    assert_type(it, Flatten[int])
+    assert_type(it.next(), int)
+    assert_type(it.collect(), list[int])
