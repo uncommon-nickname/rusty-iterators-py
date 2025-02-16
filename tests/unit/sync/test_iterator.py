@@ -71,3 +71,12 @@ def test_nth_returns_correct_element() -> None:
 def test_nth_throws_when_size_exceeded() -> None:
     with pytest.raises(StopIteration):
         LIter.from_items(1, 2, 3).nth(3)
+
+
+def test_last_returns_last_item() -> None:
+    assert LIter.from_items(1, 2, 3).last() == 3
+
+
+def test_last_on_empty_iterator() -> None:
+    with pytest.raises(StopIteration):
+        LIter.from_items().last()
