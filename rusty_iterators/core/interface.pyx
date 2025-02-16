@@ -212,7 +212,7 @@ cdef class Flatten(IterInterface):
 
 @cython.final
 cdef class Inspect(IterInterface):
-    def __init__(self, IterInterface it, object f=None):
+    def __init__(self, it: IterInterface, f=None):
         self.it = it
         self.f = f or (lambda x: print(f"{self}: {x}"))
 
