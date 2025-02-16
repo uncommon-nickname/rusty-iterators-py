@@ -12,6 +12,7 @@ cdef class IterInterface:
     cpdef object fold(self, object init, object func)
     cpdef void for_each(self, object func)
     cpdef object last(self)
+    cpdef object inspect(self, object f = *)
     cpdef object map(self, object func)
     cpdef object moving_window(self, int size, bint use_cache = *)
     cpdef object next(self)
@@ -35,6 +36,10 @@ cdef class Flatten(IterInterface):
     cdef IterInterface it
     cdef int ptr
     cdef list cache
+
+cdef class Inspect(IterInterface):
+    cdef IterInterface it
+    cdef object f
 
 cdef class Map(IterInterface):
     cdef IterInterface it
