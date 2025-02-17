@@ -80,3 +80,10 @@ def test_last_returns_last_item() -> None:
 def test_last_on_empty_iterator() -> None:
     with pytest.raises(StopIteration):
         LIter.from_items().last()
+
+
+def test_for_each() -> None:
+    storage = []
+    LIter.from_items(1, 2, 3).for_each(lambda x: storage.append(x))
+
+    assert storage == [1, 2, 3]
