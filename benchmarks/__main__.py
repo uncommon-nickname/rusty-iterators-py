@@ -5,15 +5,15 @@ import cProfile
 import logging
 import pstats
 import timeit
-from typing import TYPE_CHECKING, Optional, Protocol, TypeVar
+from typing import TYPE_CHECKING, Any, Optional, Protocol
 
 from .manager import BenchmarkManager
 
 if TYPE_CHECKING:
-    T = TypeVar("T")
     from collections.abc import Iterable
 
     from .manager import BenchmarkCallable
+
 
 logger = logging.getLogger(__name__)
 
@@ -33,7 +33,7 @@ def parse_args() -> _ArgNamespace:
     return namespace
 
 
-def profile(benchmark: BenchmarkCallable[T], arg: Iterable[T]) -> None:
+def profile(benchmark: BenchmarkCallable[Any], arg: Iterable[Any]) -> None:
     with cProfile.Profile() as pr:
         benchmark(arg)
 
@@ -41,7 +41,7 @@ def profile(benchmark: BenchmarkCallable[T], arg: Iterable[T]) -> None:
     ps.print_stats()
 
 
-def time(benchmark: BenchmarkCallable[T], arg: Iterable[T]) -> None:
+def time(benchmark: BenchmarkCallable[Any], arg: Iterable[Any]) -> None:
     result = timeit.timeit(lambda: benchmark(arg), number=100)
     logger.info("Average runtime after 100 runs: %f s", result / 100)
 
