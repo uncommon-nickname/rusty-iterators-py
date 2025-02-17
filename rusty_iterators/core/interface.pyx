@@ -70,6 +70,10 @@ cdef class IterInterface:
             init = func(init, item)
         return init
 
+    cpdef void for_each(self, object func):
+        for item in self:
+            func(item)
+
     cpdef last(self):
         # NOTE: 15.02.2025 <@uncommon-nickname>
         # This should probably be done better in the future.
@@ -191,7 +195,7 @@ cdef class Flatten(IterInterface):
     cpdef next(self):
         cdef object item
         cdef object indexable_item
-        
+
         if self.cache and self.ptr < len(self.cache):
             item = self.cache[self.ptr]
             self.ptr += 1
@@ -201,7 +205,7 @@ cdef class Flatten(IterInterface):
         indexable_item = self.it.next()
         self.cache = indexable_item[1:]
         return indexable_item[0]
-             
+
 
 @cython.final
 cdef class Map(IterInterface):
