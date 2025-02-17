@@ -42,25 +42,16 @@ def profile(benchmark: BenchmarkCallable[T], arg: Iterable[T]) -> None:
 
 
 def time(benchmark: BenchmarkCallable[T], arg: Iterable[T]) -> None:
-    result = timeit.timeit(lambda: benchmark(arg), number=10)
-    logger.info("Best result after 10 runs: %f s", result)
+    result = timeit.timeit(lambda: benchmark(arg), number=100)
+    logger.info("Average runtime after 100 runs: %f s", result / 100)
 
 
 def main() -> int:
     args = parse_args()
 
-    if args.benchmark:
-        logger.info("Running benchmark: `%s`", args.benchmark)
-        benchmark, arg = BenchmarkManager.get_benchmark(args.benchmark)
-
-        if args.profile:
-            profile(benchmark, arg)
-        else:
-            time(benchmark, arg)
-        return 0
-
-    for benchmark_name, (benchmark, arg) in BenchmarkManager._storage.items():
+    for benchmark_name, (benchmark, arg) in BenchmarkManager.get_benchmarks(name=args.benchmark):
         logger.info("Running benchmark: `%s`", benchmark_name)
+
         if args.profile:
             profile(benchmark, arg)
         else:

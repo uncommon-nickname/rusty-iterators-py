@@ -17,7 +17,7 @@ def benchmark_rusty_iterators_map(arg: Iterable[int]) -> None:
 
 
 @BenchmarkManager.register(arg=range(1_000_000))
-def benchmark_stdlib_iterators_map(arg: Iterable[int]) -> None:
+def benchmark_stdlib_map(arg: Iterable[int]) -> None:
     _ = list(map(lambda x: x * 2, iter(arg)))
 
 
@@ -27,7 +27,7 @@ def benchmark_rusty_iterators_filter(arg: Iterable[int]) -> None:
 
 
 @BenchmarkManager.register(arg=range(1_000_000))
-def benchmark_stdlib_iterators_filter(arg: Iterable[int]) -> None:
+def benchmark_stdlib_filter(arg: Iterable[int]) -> None:
     _ = list(filter(lambda x: x % 2 == 0, iter(arg)))
 
 

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, ClassVar, TypeAlias, TypeVar
+from typing import TYPE_CHECKING, Any, ClassVar, Optional, TypeAlias, TypeVar
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterable
@@ -9,6 +9,7 @@ if TYPE_CHECKING:
 
     BenchmarkCallable: TypeAlias = Callable[[Iterable[T]], None]
     BenchmarkStorage: TypeAlias = dict[str, tuple[BenchmarkCallable[T], Iterable[T]]]
+    BenchmarkItem: TypeAlias = tuple[str, tuple[BenchmarkCallable[T], Iterable[T]]]
 
 
 class BenchmarkManager:
@@ -27,5 +28,8 @@ class BenchmarkManager:
         return list(cls._storage.keys())
 
     @classmethod
-    def get_benchmark(cls, name: str) -> tuple[BenchmarkCallable[Any], Iterable[Any]]:
-        return cls._storage[name]
+    def get_benchmarks(cls, name: Optional[str] = None) -> list[BenchmarkItem[Any]]:
+        if name:
+            return [(name, cls._storage[name])]
+
+        return list(cls._storage.items())
