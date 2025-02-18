@@ -214,7 +214,7 @@ cdef class Flatten(IterInterface):
 cdef class Inspect(IterInterface):
     def __init__(self, it: IterInterface, f=None):
         self.it = it
-        self.f = f or (lambda x: print(f"{self}: {x}"))
+        self.f = f or (lambda x: print(f"{self.it}: {x}"))
 
     def __str__(self):
         return f"Inspect(it={self.it})"
