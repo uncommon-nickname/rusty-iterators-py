@@ -16,6 +16,7 @@ if TYPE_CHECKING:
         Enumerate,
         Filter,
         Flatten,
+        Inspect,
         Map,
         StepBy,
         Take,
@@ -220,3 +221,10 @@ def verify_flatten_type() -> None:
     assert_type(it, Flatten[int])
     assert_type(it.next(), int)
     assert_type(it.collect(), list[int])
+
+
+def verify_inspect_type() -> None:
+    it = LIter.from_items(1, 2, 3, 4).filter(lambda x: x % 2 == 0).inspect()
+
+    assert_type(it, Inspect[int])
+    assert_type(it.next(), int)

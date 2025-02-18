@@ -15,6 +15,7 @@ AggCallable: TypeAlias = Callable[[T], bool]
 FilterCallable: TypeAlias = Callable[[T], bool]
 FoldCallable: TypeAlias = Callable[[R, T], R]
 ForEachCallable: TypeAlias = Callable[[T], None]
+InspectCallable: TypeAlias = Callable[[T], None]
 MapCallable: TypeAlias = Callable[[T], R]
 ReduceCallable: TypeAlias = Callable[[T, T], T]
 
@@ -64,6 +65,7 @@ class IterInterface(Generic[T]):
     def fold(self, init: R, func: FoldCallable[R, T]) -> R: ...
     def for_each(self, func: ForEachCallable[T]) -> None: ...
     def last(self) -> T: ...
+    def inspect(self, f: Optional[InspectCallable[T]] = None) -> Inspect[T]: ...
     def map(self, func: MapCallable[T, R]) -> Map[T, R]: ...
     @overload
     def moving_window(self, size: int, use_cache: Literal[False]) -> CopyMovingWindow[T]: ...
@@ -114,6 +116,10 @@ class CopyMovingWindow(IterInterface[list[T]], Generic[T]):
 @final
 class Flatten(IterInterface[T]):
     def __init__(self, it: IterInterface[list[T] | tuple[T, ...]]) -> None: ...
+
+@final
+class Inspect(IterInterface[T]):
+    def __init__(self, it: IterInterface[T], f: Optional[InspectCallable[T]] = None) -> None: ...
 
 @final
 class StepBy(IterInterface[T], Generic[T]):

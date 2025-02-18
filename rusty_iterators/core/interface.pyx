@@ -78,6 +78,9 @@ cdef class IterInterface:
         # NOTE: 15.02.2025 <@uncommon-nickname>
         # This should probably be done better in the future.
         return self.reduce(_persist_last_item)
+        
+    cpdef inspect(self, object f=None):
+        return Inspect(self, f)
 
     cpdef map(self, object func):
         return Map(self, func)
@@ -205,6 +208,29 @@ cdef class Flatten(IterInterface):
         indexable_item = self.it.next()
         self.cache = indexable_item[1:]
         return indexable_item[0]
+
+
+@cython.final
+cdef class Inspect(IterInterface):
+    def __init__(self, it: IterInterface, f=None):
+        self.it = it
+        self.f = f or (lambda x: print(f"{self.it}: {x}"))
+
+    def __str__(self):
+        return f"Inspect(it={self.it})"
+
+    cpdef bint can_be_copied(self):
+        return self.it.can_be_copied()
+
+    cpdef copy(self):
+        return Inspect(self.it.copy(), self.f)
+
+    cpdef next(self):
+        cdef object item
+
+        item = self.it.next()
+        self.f(item)
+        return item
 
 
 @cython.final
