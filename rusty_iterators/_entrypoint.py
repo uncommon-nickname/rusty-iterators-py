@@ -4,9 +4,7 @@ from collections.abc import AsyncIterator, Iterator, Sequence
 from typing import Any
 
 from rusty_iterators._versioned_types import TypeVar
-from rusty_iterators.core.wrappers import IterWrapper, SeqWrapper
-
-from ._async import AsyncIterWrapper
+from rusty_iterators.core.wrappers import AsyncIterWrapper, IterWrapper, SeqWrapper
 
 T = TypeVar("T", default=Any, contravariant=True)
 

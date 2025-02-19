@@ -4,7 +4,7 @@ from collections.abc import Callable, Iterator
 from typing import Any, Generic, Literal, Optional, Protocol, TypeAlias, final, overload
 
 from rusty_iterators._versioned_types import Self, TypeVar
-from rusty_iterators.lib._async import AsyncIterAdapter
+from rusty_iterators.core.async_interface import AsyncIterAdapter
 
 T = TypeVar("T", default=Any)
 T_co = TypeVar("T_co", default=Any, covariant=True)
