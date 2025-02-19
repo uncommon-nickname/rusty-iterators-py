@@ -6,8 +6,8 @@ from typing import TYPE_CHECKING, assert_type
 from rusty_iterators import LIter
 
 if TYPE_CHECKING:
-    from rusty_iterators.lib._async import AsyncIterAdapter, AsyncIterWrapper
-    from rusty_iterators.lib._async._interface import AsyncMap
+    from rusty_iterators.core.async_interface import AsyncIterAdapter, AsyncMap
+    from rusty_iterators.core.wrappers import AsyncIterWrapper
 
 
 async def async_iter() -> AsyncIterator[int]:

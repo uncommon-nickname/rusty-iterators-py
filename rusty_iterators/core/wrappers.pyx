@@ -1,5 +1,6 @@
 cimport cython
 from rusty_iterators.core.interface cimport IterInterface
+from rusty_iterators.core.async_interface cimport AsyncIterInterface
 
 @cython.final
 cdef class SeqWrapper(IterInterface):
@@ -42,7 +43,7 @@ cdef class IterWrapper(IterInterface):
     cpdef bint can_be_copied(self):
         if isinstance(self.it, IterInterface):
             return self.it.can_be_copied()
-        return False        
+        return False
 
     cpdef copy(self):
         if isinstance(self.it, IterInterface):
@@ -56,3 +57,18 @@ cdef class IterWrapper(IterInterface):
 
     cpdef next(self):
         return next(self.it)
+
+
+@cython.final
+cdef class AsyncIterWrapper(AsyncIterInterface):
+    cdef object ait
+
+    def __cinit__(self, object ait):
+        self.ait = ait
+
+    def __str__(self):
+        return f"AsyncIterWrapper(ait={self.ait})"
+
+    @cython.iterable_coroutine
+    async def anext(self):
+        return await anext(self.ait)

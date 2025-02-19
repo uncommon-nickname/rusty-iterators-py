@@ -1,6 +1,5 @@
 import cython
-
-from rusty_iterators.lib._async import AsyncIterAdapter
+from rusty_iterators.core.async_interface cimport AsyncIterAdapter
 
 cdef object _aggregate_sum(object acc, object x):
     return acc + x
@@ -78,7 +77,7 @@ cdef class IterInterface:
         # NOTE: 15.02.2025 <@uncommon-nickname>
         # This should probably be done better in the future.
         return self.reduce(_persist_last_item)
-        
+
     cpdef inspect(self, object f=None):
         return Inspect(self, f)
 
