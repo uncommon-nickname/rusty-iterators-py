@@ -100,7 +100,7 @@ def verify_iterator_type() -> None:
 def verify_map_iterator_type() -> None:
     it = LIter.from_items(1, 2, 3).map(lambda x: str(x))
 
-    assert_type(it, Map[int, str])
+    assert_type(it, Map[str])
     assert_type(it.next(), str)
     assert_type(it.collect(), list[str])
 

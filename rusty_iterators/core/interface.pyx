@@ -1,10 +1,10 @@
 import cython
 from rusty_iterators.core.async_interface cimport AsyncIterAdapter
 
-cdef object _aggregate_sum(object acc, object x):
+cdef inline object _aggregate_sum(object acc, object x):
     return acc + x
 
-cdef object _persist_last_item(object _, object x):
+cdef inline object _persist_last_item(object _, object x):
     return x
 
 cdef class IterInterface:
@@ -23,21 +23,7 @@ cdef class IterInterface:
     def any(self, f=None):
         return any(f(i) for i in self) if f else any(self)
 
-    def as_async(self):
-        return AsyncIterAdapter(self)
-
-    cpdef bint can_be_copied(self):
-        raise NotImplementedError
-
-    cpdef collect(self):
-        cdef list result
-        result = self.collect_into(list)
-        return result
-
-    cpdef collect_into(self, factory):
-        return factory(self)
-
-    cpdef advance_by(self, int n):
+    cpdef IterInterface advance_by(self, int n):
         if n < 0:
             raise ValueError("Amount to advance by must be greater or equal to 0.")
 
@@ -49,22 +35,36 @@ cdef class IterInterface:
 
         return self
 
-    cpdef copy(self):
+    cpdef AsyncIterAdapter as_async(self):
+        return AsyncIterAdapter(self)
+
+    cpdef bint can_be_copied(self):
         raise NotImplementedError
 
-    cpdef cycle(self, bint use_cache=True):
+    cpdef list collect(self):
+        cdef list result
+        result = self.collect_into(list)
+        return result
+
+    cpdef object collect_into(self, factory):
+        return factory(self)
+
+    cpdef IterInterface copy(self):
+        raise NotImplementedError
+
+    cpdef IterInterface cycle(self, bint use_cache=True):
         return CacheCycle(self) if use_cache else CopyCycle(self)
 
-    cpdef enumerate(self):
+    cpdef Enumerate enumerate(self):
         return Enumerate(self)
 
-    cpdef filter(self, object func):
+    cpdef Filter filter(self, object func):
         return Filter(self, func)
 
-    cpdef flatten(self):
+    cpdef Flatten flatten(self):
         return Flatten(self)
 
-    cpdef fold(self, object init, object func):
+    cpdef object fold(self, object init, object func):
         for item in self:
             init = func(init, item)
         return init
@@ -73,42 +73,42 @@ cdef class IterInterface:
         for item in self:
             func(item)
 
-    cpdef last(self):
+    cpdef object last(self):
         # NOTE: 15.02.2025 <@uncommon-nickname>
         # This should probably be done better in the future.
         return self.reduce(_persist_last_item)
 
-    cpdef inspect(self, object f=None):
+    cpdef Inspect inspect(self, object f=None):
         return Inspect(self, f)
 
-    cpdef map(self, object func):
+    cpdef Map map(self, object func):
         return Map(self, func)
 
-    cpdef moving_window(self, int size, bint use_cache = True):
+    cpdef IterInterface moving_window(self, int size, bint use_cache = True):
         return CacheMovingWindow(self, size) if use_cache else CopyMovingWindow(self, size)
 
-    cpdef next(self):
+    cpdef object next(self):
         raise NotImplementedError
 
-    cpdef nth(self, int n):
+    cpdef object nth(self, int n):
         return self.advance_by(n).next()
 
-    cpdef reduce(self, object func):
+    cpdef object reduce(self, object func):
         cdef object init = self.next()
         return self.fold(init, func)
 
-    cpdef step_by(self, int step):
+    cpdef StepBy step_by(self, int step):
         return StepBy(self, step)
 
-    cpdef sum(self):
+    cpdef object sum(self):
         # NOTE: 14.02.2025 <@uncommon-nickname>
         # Closure functions are not yet supported by Cython transpiler.
         return self.reduce(_aggregate_sum)
 
-    cpdef take(self, int amount):
+    cpdef Take take(self, int amount):
         return Take(self, amount)
 
-    cpdef unzip(self):
+    cpdef object unzip(self):
         cdef list left = []
         cdef list right = []
 
@@ -118,10 +118,10 @@ cdef class IterInterface:
 
         return left, right
 
-    cpdef zip(self, IterInterface second):
+    cpdef Zip zip(self, IterInterface second):
         return Zip(self, second)
 
-    cpdef chain(self, IterInterface second):
+    cpdef Chain chain(self, IterInterface second):
         return Chain(self, second)
 
 @cython.final
@@ -136,14 +136,14 @@ cdef class Enumerate(IterInterface):
     cpdef bint can_be_copied(self):
         return self.it.can_be_copied()
 
-    cpdef copy(self):
+    cpdef Enumerate copy(self):
         cdef Enumerate obj
 
         obj = Enumerate(self.it.copy())
         obj.curr_idx = self.curr_idx
         return obj
 
-    cpdef next(self):
+    cpdef object next(self):
         cdef object item
 
         item = self.it.next()
@@ -164,10 +164,10 @@ cdef class Filter(IterInterface):
     cpdef bint can_be_copied(self):
         return self.it.can_be_copied()
 
-    cpdef copy(self):
+    cpdef Filter copy(self):
         return Filter(self.it.copy(), self.func)
 
-    cpdef next(self):
+    cpdef object next(self):
         cdef object item
         while True:
             item = self.it.next()
@@ -187,14 +187,14 @@ cdef class Flatten(IterInterface):
     cpdef bint can_be_copied(self):
         return self.it.can_be_copied()
 
-    cpdef copy(self):
+    cpdef Flatten copy(self):
         obj = Flatten(self.it.copy())
         obj.cache = self.cache
         obj.ptr = self.ptr
 
         return obj
 
-    cpdef next(self):
+    cpdef object next(self):
         cdef object item
         cdef object indexable_item
 
@@ -221,10 +221,10 @@ cdef class Inspect(IterInterface):
     cpdef bint can_be_copied(self):
         return self.it.can_be_copied()
 
-    cpdef copy(self):
+    cpdef Inspect copy(self):
         return Inspect(self.it.copy(), self.f)
 
-    cpdef next(self):
+    cpdef object next(self):
         cdef object item
 
         item = self.it.next()
@@ -244,10 +244,10 @@ cdef class Map(IterInterface):
     cpdef bint can_be_copied(self):
         return self.it.can_be_copied()
 
-    cpdef copy(self):
+    cpdef Map copy(self):
         return Map(self.it.copy(), self.func)
 
-    cpdef next(self):
+    cpdef object next(self):
         return self.func(self.it.next())
 
 @cython.final
@@ -264,14 +264,14 @@ cdef class CacheCycle(IterInterface):
     cpdef bint can_be_copied(self):
         return self.it.can_be_copied()
 
-    cpdef copy(self):
+    cpdef CacheCycle copy(self):
         obj = CacheCycle(self.it.copy())
         obj.cache = self.cache[:]
         obj.ptr = self.ptr
         obj.use_cache = self.use_cache
         return obj
 
-    cpdef next(self):
+    cpdef object next(self):
         if self.use_cache:
             self.ptr = self.ptr % len(self.cache)
             item = self.cache[self.ptr]
@@ -306,7 +306,7 @@ cdef class CacheMovingWindow(IterInterface):
     cpdef bint can_be_copied(self):
         return self.it.can_be_copied()
 
-    cpdef copy(self):
+    cpdef CacheMovingWindow copy(self):
         cdef CacheMovingWindow obj
 
         obj = CacheMovingWindow(self.it.copy(), self.size)
@@ -315,7 +315,7 @@ cdef class CacheMovingWindow(IterInterface):
 
         return obj
 
-    cpdef next(self):
+    cpdef object next(self):
         cdef list result
 
         if len(self.cache) == self.size:
@@ -349,12 +349,12 @@ cdef class CopyCycle(IterInterface):
     cpdef bint can_be_copied(self):
         return self.it.can_be_copied()
 
-    cpdef copy(self):
+    cpdef CopyCycle copy(self):
         obj = CopyCycle(self.it.copy())
         obj.orig = self.orig.copy()
         return obj
 
-    cpdef next(self):
+    cpdef object next(self):
         try:
             return self.it.next()
         except StopIteration:
@@ -376,7 +376,7 @@ cdef class CopyMovingWindow(IterInterface):
     cpdef bint can_be_copied(self):
         return self.it.can_be_copied()
 
-    cpdef copy(self):
+    cpdef CopyMovingWindow copy(self):
         cdef CopyMovingWindow obj
 
         obj = CopyMovingWindow(self.it.copy(), self.size)
@@ -384,7 +384,7 @@ cdef class CopyMovingWindow(IterInterface):
 
         return obj
 
-    cpdef next(self):
+    cpdef object next(self):
         cdef list result
 
         result = [self.it.next() for _ in range(self.size)]
@@ -409,13 +409,13 @@ cdef class StepBy(IterInterface):
     cpdef bint can_be_copied(self):
         return self.it.can_be_copied()
 
-    cpdef copy(self):
+    cpdef StepBy copy(self):
         cdef StepBy obj
         obj = StepBy(self.it.copy(), self.step_minus_one + 1)
         obj.first_take = self.first_take
         return obj
 
-    cpdef next(self):
+    cpdef object next(self):
         if self.first_take:
             self.first_take = False
         else:
@@ -440,13 +440,13 @@ cdef class Take(IterInterface):
     cpdef bint can_be_copied(self):
         return self.it.can_be_copied()
 
-    cpdef copy(self):
+    cpdef Take copy(self):
         cdef Take obj
         obj = Take(self.it.copy(), self.amount)
         obj.taken = self.taken
         return obj
 
-    cpdef next(self):
+    cpdef object next(self):
         if self.taken == self.amount:
             raise StopIteration
 
@@ -467,10 +467,10 @@ cdef class Zip(IterInterface):
     cpdef bint can_be_copied(self):
         return self.first.can_be_copied() and self.second.can_be_copied()
 
-    cpdef copy(self):
+    cpdef Zip copy(self):
         return Zip(self.first.copy(), self.second.copy())
 
-    cpdef next(self):
+    cpdef object next(self):
         return (self.first.next(), self.second.next())
 
 @cython.final
@@ -486,18 +486,17 @@ cdef class Chain(IterInterface):
     cpdef bint can_be_copied(self):
         return self.first.can_be_copied() and self.second.can_be_copied()
 
-    cpdef copy(self):
-        obj = Chain(self.first.copy(), self.second.copy())
+    cpdef Chain copy(self):
+        cdef Chain obj = Chain(self.first.copy(), self.second.copy())
         obj.use_second = self.use_second
         return obj
 
-    cpdef next(self):
+    cpdef object next(self):
         if self.use_second:
             return self.second.next()
 
         try:
             return self.first.next()
-
         except StopIteration:
             self.use_second = True
             return self.next()

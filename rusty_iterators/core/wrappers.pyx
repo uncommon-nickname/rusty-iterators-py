@@ -17,12 +17,12 @@ cdef class SeqWrapper(IterInterface):
     cpdef bint can_be_copied(self):
         return True
 
-    cpdef copy(self):
-        obj = SeqWrapper(self.s)
+    cpdef SeqWrapper copy(self):
+        cdef SeqWrapper obj = SeqWrapper(self.s)
         obj.ptr = self.ptr
         return obj
 
-    cpdef next(self):
+    cpdef object next(self):
         try:
             item = self.s[self.ptr]
         except IndexError as exc:
@@ -34,7 +34,7 @@ cdef class SeqWrapper(IterInterface):
 cdef class IterWrapper(IterInterface):
     cdef object it
 
-    def __cinit__(self,object it):
+    def __cinit__(self, object it):
         self.it = it
 
     def __str__(self):
@@ -45,7 +45,7 @@ cdef class IterWrapper(IterInterface):
             return self.it.can_be_copied()
         return False
 
-    cpdef copy(self):
+    cpdef IterWrapper copy(self):
         if isinstance(self.it, IterInterface):
             return IterWrapper(self.it.copy())
 
@@ -55,7 +55,7 @@ cdef class IterWrapper(IterInterface):
             "you should collect the generator into a Sequence and create a LIter from it."
         )
 
-    cpdef next(self):
+    cpdef object next(self):
         return next(self.it)
 
 
