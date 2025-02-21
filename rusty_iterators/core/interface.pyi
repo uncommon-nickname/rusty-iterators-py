@@ -66,7 +66,7 @@ class IterInterface(Generic[T]):
     def for_each(self, func: ForEachCallable[T]) -> None: ...
     def last(self) -> T: ...
     def inspect(self, f: Optional[InspectCallable[T]] = None) -> Inspect[T]: ...
-    def map(self, func: MapCallable[T, R]) -> Map[T, R]: ...
+    def map(self, func: MapCallable[T, R]) -> Map[R]: ...
     @overload
     def moving_window(self, size: int, use_cache: Literal[False]) -> CopyMovingWindow[T]: ...
     @overload
@@ -90,27 +90,27 @@ class Enumerate(IterInterface[EnumerateItem[T]]):
     def __init__(self, it: IterInterface[T]) -> None: ...
 
 @final
-class Filter(IterInterface[T], Generic[T]):
+class Filter(IterInterface[T]):
     def __init__(self, other: IterInterface[T], func: FilterCallable[T]) -> None: ...
 
 @final
-class Map(IterInterface[R], Generic[T, R]):
-    def __init__(self, it: IterInterface[T], func: MapCallable[T, R]) -> None: ...
+class Map(IterInterface[T]):
+    def __init__(self, it: IterInterface[R], func: MapCallable[R, T]) -> None: ...
 
 @final
-class CacheCycle(IterInterface[T], Generic[T]):
+class CacheCycle(IterInterface[T]):
     def __init__(self, it: IterInterface[T]) -> None: ...
 
 @final
-class CacheMovingWindow(IterInterface[list[T]], Generic[T]):
+class CacheMovingWindow(IterInterface[list[T]]):
     def __init__(self, it: IterInterface[T], size: int) -> None: ...
 
 @final
-class CopyCycle(IterInterface[T], Generic[T]):
+class CopyCycle(IterInterface[T]):
     def __init__(self, it: IterInterface[T]) -> None: ...
 
 @final
-class CopyMovingWindow(IterInterface[list[T]], Generic[T]):
+class CopyMovingWindow(IterInterface[list[T]]):
     def __init__(self, it: IterInterface[T], size: int) -> None: ...
 
 @final
@@ -122,17 +122,17 @@ class Inspect(IterInterface[T]):
     def __init__(self, it: IterInterface[T], f: Optional[InspectCallable[T]] = None) -> None: ...
 
 @final
-class StepBy(IterInterface[T], Generic[T]):
+class StepBy(IterInterface[T]):
     def __init__(self, it: IterInterface[T], step: int) -> None: ...
 
 @final
-class Take(IterInterface[T], Generic[T]):
+class Take(IterInterface[T]):
     def __init__(self, it: IterInterface[T], amount: int) -> None: ...
 
 @final
-class Zip(IterInterface[ZipItem[T, R]], Generic[T, R]):
+class Zip(IterInterface[ZipItem[T, R]]):
     def __init__(self, first: IterInterface[T], second: IterInterface[R]) -> None: ...
 
 @final
-class Chain(IterInterface[T], Generic[T]):
+class Chain(IterInterface[T]):
     def __init__(self, first: IterInterface[T], second: IterInterface[R]) -> None: ...

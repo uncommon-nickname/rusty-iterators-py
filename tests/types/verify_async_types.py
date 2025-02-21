@@ -29,7 +29,7 @@ async def verify_async_map_type() -> None:
 
     ait = LIter.from_ait(async_iter()).amap(apply_change)
 
-    assert_type(ait, AsyncMap[int, str])
+    assert_type(ait, AsyncMap[str])
     assert_type(await ait.anext(), str)
     assert_type(await ait.acollect(), list[str])
 
