@@ -87,3 +87,8 @@ def test_for_each() -> None:
     LIter.from_items(1, 2, 3).for_each(lambda x: storage.append(x))
 
     assert storage == [1, 2, 3]
+
+
+@pytest.mark.parametrize("arg", ([1, 2, 3], []))
+def test_count_iterator_elements(arg: list[int]) -> None:
+    assert LIter.from_seq(arg).count() == len(arg)

@@ -55,3 +55,13 @@ def benchmark_rusty_iterators_flatten(arg: Iterable[list[int]]) -> None:
 @BenchmarkManager.register(arg=[[i, i * 2] for i in range(1_000_000)])
 def benchmark_stdlib_flatten(arg: Iterable[list[int]]) -> None:
     _ = [el for sub in arg for el in sub]
+
+
+@BenchmarkManager.register(arg=range(1_000_000))
+def benchmark_rusty_iterators_count(arg: Iterable[int]) -> None:
+    _ = LIter.from_it(iter(arg)).count()
+
+
+@BenchmarkManager.register(arg=range(1_000_000))
+def benchmark_stdlib_count(arg: Iterable[int]) -> None:
+    _ = len(list(arg))
