@@ -60,6 +60,7 @@ def verify_items_iterator_type() -> None:
     assert_type(it.nth(5), int)
     assert_type(it.last(), int)
     assert_type(it.for_each(lambda x: None), None)
+    assert_type(it.count(), int)
 
 
 def verify_empty_sequence_iterator_type() -> None:

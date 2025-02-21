@@ -8,6 +8,7 @@ cdef class IterInterface:
     cpdef list collect(self)
     cpdef object collect_into(self, object factory)
     cpdef IterInterface copy(self)
+    cpdef int count(self)
     cpdef IterInterface cycle(self, bint use_cache = *)
     cpdef Enumerate enumerate(self)
     cpdef Flatten flatten(self)
