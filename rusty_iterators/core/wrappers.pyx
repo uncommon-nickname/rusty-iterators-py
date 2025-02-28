@@ -3,6 +3,43 @@ from rusty_iterators.core.interface cimport IterInterface
 from rusty_iterators.core.async_interface cimport AsyncIterInterface
 
 @cython.final
+cdef class CopiableGenerator:
+    cdef object it
+    cdef list cache
+    cdef int ptr
+
+    def __cinit__(self, object it, list cache, int ptr):
+        self.it = it
+        self.cache = cache
+        self.ptr = ptr
+
+    def __iter__(self):
+        return self
+
+    @cython.boundscheck(False)
+    def __next__(self):
+        cdef object item
+
+        if self.ptr < len(self.cache):
+            item = self.cache[self.ptr]
+        else:
+            item = next(self.it)
+            self.cache.append(item)
+        self.ptr += 1
+
+        return item
+
+    def __repr__(self):
+        return self.__str__()
+
+    def __str__(self):
+        return f"CopiableGenerator(self.it={self.it})"
+
+    cpdef CopiableGenerator copy(self):
+        cdef CopiableGenerator obj = CopiableGenerator(self.it, self.cache, self.ptr)
+        return obj
+
+@cython.final
 cdef class SeqWrapper(IterInterface):
     cdef object s
     cdef int ptr
@@ -41,19 +78,15 @@ cdef class IterWrapper(IterInterface):
         return f"IterWrapper(it={self.it})"
 
     cpdef bint can_be_copied(self):
-        if isinstance(self.it, IterInterface):
-            return self.it.can_be_copied()
-        return False
+        return True
 
     cpdef IterWrapper copy(self):
-        if isinstance(self.it, IterInterface):
+        if isinstance(self.it, (IterInterface, CopiableGenerator)):
             return IterWrapper(self.it.copy())
 
-        raise Exception(
-            "Iterator containing a python generator cannot be copied.\n"
-            "Python generators can't be trivially copied, if you really need to create a copy, "
-            "you should collect the generator into a Sequence and create a LIter from it."
-        )
+        self.it = CopiableGenerator(self.it, [], 0)
+
+        return IterWrapper(self.it.copy())
 
     cpdef object next(self):
         return next(self.it)

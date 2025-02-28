@@ -1,5 +1,3 @@
-import pytest
-
 from rusty_iterators import LIter
 
 
@@ -27,13 +25,21 @@ def test_sequence_iterator_can_be_copied() -> None:
     assert it.collect() == cp.collect() == ["b", "c", "d"]
 
 
-def test_iter_iterator_cannot_be_copied() -> None:
-    it = LIter.from_it(iter(range(10)))
+def test_iter_iterator_can_be_copied() -> None:
+    it = LIter.from_it(x for x in [1, 2, 3, 4, 5])
+    it.next()
 
-    assert not it.can_be_copied()
+    assert it.can_be_copied()
 
-    with pytest.raises(Exception):
-        it.copy()
+    cp1 = it.copy()
+    cp1.next()
+
+    cp2 = cp1.copy()
+    cp2.next()
+
+    assert it.collect() == [2, 3, 4, 5]
+    assert cp1.collect() == [3, 4, 5]
+    assert cp2.collect() == [4, 5]
 
 
 def test_items_iterator_can_be_copied() -> None:
