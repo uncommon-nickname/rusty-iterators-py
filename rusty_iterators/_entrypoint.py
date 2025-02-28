@@ -1,14 +1,18 @@
 from __future__ import annotations
 
-from collections.abc import AsyncIterator, Iterator, Sequence
-from typing import Any
+from typing import TYPE_CHECKING, Any, final
 
-from rusty_iterators._versioned_types import TypeVar
 from rusty_iterators.core.wrappers import AsyncIterWrapper, IterWrapper, SeqWrapper
 
-T = TypeVar("T", default=Any, contravariant=True)
+if TYPE_CHECKING:
+    from collections.abc import AsyncIterator, Iterator, Sequence
+
+    from rusty_iterators._versioned_types import TypeVar
+
+    T = TypeVar("T", default=Any, contravariant=True)
 
 
+@final
 class LIter:
     @classmethod
     def from_it(cls, it: Iterator[T]) -> IterWrapper[T]:
