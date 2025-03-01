@@ -28,8 +28,6 @@ def test_copy_cycle_can_be_copied() -> None:
     it = LIter.from_items(1, 2).cycle(use_cache=False)
     it.next()
 
-    assert it.can_be_copied()
-
     cp = it.copy()
 
     assert cp.next() == it.next() == 2
@@ -40,8 +38,6 @@ def test_copy_cycle_can_be_copied() -> None:
 def test_cache_cycle_can_be_copied() -> None:
     it = LIter.from_items(1, 2).cycle(use_cache=True)
     it.next()
-
-    assert it.can_be_copied()
 
     cp = it.copy()
 

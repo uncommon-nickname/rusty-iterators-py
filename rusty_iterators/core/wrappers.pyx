@@ -8,10 +8,10 @@ cdef class CopiableGenerator:
     cdef list cache
     cdef int ptr
 
-    def __cinit__(self, object it, list cache, int ptr):
+    def __cinit__(self, object it):
         self.it = it
-        self.cache = cache
-        self.ptr = ptr
+        self.cache = []
+        self.ptr = 0
 
     def __iter__(self):
         return self
@@ -36,7 +36,12 @@ cdef class CopiableGenerator:
         return f"CopiableGenerator(self.it={self.it})"
 
     cpdef CopiableGenerator copy(self):
-        cdef CopiableGenerator obj = CopiableGenerator(self.it, self.cache, self.ptr)
+        cdef CopiableGenerator obj
+
+        obj = CopiableGenerator(self.it)
+        obj.cache = self.cache
+        obj.ptr = self.ptr
+
         return obj
 
 @cython.final
@@ -51,12 +56,12 @@ cdef class SeqWrapper(IterInterface):
     def __str__(self):
         return f"SeqWrapper(ptr={self.ptr}, s={len(self.s)})"
 
-    cpdef bint can_be_copied(self):
-        return True
-
     cpdef SeqWrapper copy(self):
-        cdef SeqWrapper obj = SeqWrapper(self.s)
+        cdef SeqWrapper obj
+
+        obj = SeqWrapper(self.s)
         obj.ptr = self.ptr
+
         return obj
 
     cpdef object next(self):
@@ -77,14 +82,16 @@ cdef class IterWrapper(IterInterface):
     def __str__(self):
         return f"IterWrapper(it={self.it})"
 
-    cpdef bint can_be_copied(self):
-        return True
-
     cpdef IterWrapper copy(self):
         if isinstance(self.it, (IterInterface, CopiableGenerator)):
             return IterWrapper(self.it.copy())
 
-        self.it = CopiableGenerator(self.it, [], 0)
+        # NOTE: 01.03.2025 <@uncommon-nickname>
+        # Using this wrapper type, makes the item consumption slower.
+        # Not only we have to maintain the cache, but also call more
+        # functions. To take as small performance hit as possible, we
+        # initialize this type only if user decides to make a copy.
+        self.it = CopiableGenerator(self.it)
 
         return IterWrapper(self.it.copy())
 

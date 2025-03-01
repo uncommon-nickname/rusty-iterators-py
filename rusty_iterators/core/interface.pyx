@@ -39,9 +39,6 @@ cdef class IterInterface:
     cpdef AsyncIterAdapter as_async(self):
         return AsyncIterAdapter(self)
 
-    cpdef bint can_be_copied(self):
-        raise NotImplementedError
-
     cpdef list collect(self):
         cdef list result
         result = self.collect_into(list)
@@ -142,14 +139,12 @@ cdef class Enumerate(IterInterface):
     def __str__(self):
         return f"Enumerate(curr_idx={self.curr_idx}, it={self.it})"
 
-    cpdef bint can_be_copied(self):
-        return self.it.can_be_copied()
-
     cpdef Enumerate copy(self):
         cdef Enumerate obj
 
         obj = Enumerate(self.it.copy())
         obj.curr_idx = self.curr_idx
+
         return obj
 
     cpdef object next(self):
@@ -170,11 +165,12 @@ cdef class Filter(IterInterface):
     def __str__(self):
         return f"Filter(it={self.it})"
 
-    cpdef bint can_be_copied(self):
-        return self.it.can_be_copied()
-
     cpdef Filter copy(self):
-        return Filter(self.it.copy(), self.func)
+        cdef Filter obj
+
+        obj = Filter(self.it.copy(), self.func)
+
+        return obj
 
     cpdef object next(self):
         cdef object item
@@ -193,10 +189,9 @@ cdef class Flatten(IterInterface):
     def __str__(self):
         return f"Flatten(it={self.it})"
 
-    cpdef bint can_be_copied(self):
-        return self.it.can_be_copied()
-
     cpdef Flatten copy(self):
+        cdef Flatten obj
+
         obj = Flatten(self.it.copy())
         obj.cache = self.cache
         obj.ptr = self.ptr
@@ -227,11 +222,12 @@ cdef class Inspect(IterInterface):
     def __str__(self):
         return f"Inspect(it={self.it})"
 
-    cpdef bint can_be_copied(self):
-        return self.it.can_be_copied()
-
     cpdef Inspect copy(self):
-        return Inspect(self.it.copy(), self.f)
+        cdef Inspect obj
+
+        obj = Inspect(self.it.copy(), self.f)
+
+        return obj
 
     cpdef object next(self):
         cdef object item
@@ -250,11 +246,12 @@ cdef class Map(IterInterface):
     def __str__(self):
         return f"Map(it={self.it})"
 
-    cpdef bint can_be_copied(self):
-        return self.it.can_be_copied()
-
     cpdef Map copy(self):
-        return Map(self.it.copy(), self.func)
+        cdef Map obj
+
+        obj = Map(self.it.copy(), self.func)
+
+        return obj
 
     cpdef object next(self):
         return self.func(self.it.next())
@@ -270,14 +267,14 @@ cdef class CacheCycle(IterInterface):
     def __str__(self):
         return f"CycleCached(ptr={self.ptr}, cache_size={len(self.cache)}, it={self.it})"
 
-    cpdef bint can_be_copied(self):
-        return self.it.can_be_copied()
-
     cpdef CacheCycle copy(self):
+        cdef CacheCycle obj
+
         obj = CacheCycle(self.it.copy())
         obj.cache = self.cache[:]
         obj.ptr = self.ptr
         obj.use_cache = self.use_cache
+
         return obj
 
     cpdef object next(self):
@@ -311,9 +308,6 @@ cdef class CacheMovingWindow(IterInterface):
 
     def __str__(self):
         return f"CacheMovingWindow(size={self.size}, cache={self.cache}, it={self.it})"
-
-    cpdef bint can_be_copied(self):
-        return self.it.can_be_copied()
 
     cpdef CacheMovingWindow copy(self):
         cdef CacheMovingWindow obj
@@ -355,12 +349,12 @@ cdef class CopyCycle(IterInterface):
     def __str__(self):
         return f"CycleCopy(it={self.it}, orig={self.orig})"
 
-    cpdef bint can_be_copied(self):
-        return self.it.can_be_copied()
-
     cpdef CopyCycle copy(self):
+        cdef CopyCycle obj
+
         obj = CopyCycle(self.it.copy())
         obj.orig = self.orig.copy()
+
         return obj
 
     cpdef object next(self):
@@ -381,9 +375,6 @@ cdef class CopyMovingWindow(IterInterface):
 
     def __str__(self):
         return f"CopyMovingWindow(size={self.size}, it={self.it}, orig={self.orig})"
-
-    cpdef bint can_be_copied(self):
-        return self.it.can_be_copied()
 
     cpdef CopyMovingWindow copy(self):
         cdef CopyMovingWindow obj
@@ -415,13 +406,12 @@ cdef class StepBy(IterInterface):
     def __str__(self):
         return f"StepBy(first_take={self.first_take}, step={self.step_minus_one + 1}, it={self.it})"
 
-    cpdef bint can_be_copied(self):
-        return self.it.can_be_copied()
-
     cpdef StepBy copy(self):
         cdef StepBy obj
+
         obj = StepBy(self.it.copy(), self.step_minus_one + 1)
         obj.first_take = self.first_take
+
         return obj
 
     cpdef object next(self):
@@ -446,13 +436,12 @@ cdef class Take(IterInterface):
     def __str__(self):
         return f"Take(amount={self.amount}, taken={self.taken}, it={self.it})"
 
-    cpdef bint can_be_copied(self):
-        return self.it.can_be_copied()
-
     cpdef Take copy(self):
         cdef Take obj
+
         obj = Take(self.it.copy(), self.amount)
         obj.taken = self.taken
+
         return obj
 
     cpdef object next(self):
@@ -473,11 +462,12 @@ cdef class Zip(IterInterface):
     def __str__(self):
         return f"Zip(first={self.first}, second={self.second})"
 
-    cpdef bint can_be_copied(self):
-        return self.first.can_be_copied() and self.second.can_be_copied()
-
     cpdef Zip copy(self):
-        return Zip(self.first.copy(), self.second.copy())
+        cdef Zip obj
+
+        obj = Zip(self.first.copy(), self.second.copy())
+
+        return obj
 
     cpdef object next(self):
         return (self.first.next(), self.second.next())
@@ -492,12 +482,12 @@ cdef class Chain(IterInterface):
     def __str__(self):
         return f"Chain(use_second={self.use_second}, first={self.first}, second={self.second})"
 
-    cpdef bint can_be_copied(self):
-        return self.first.can_be_copied() and self.second.can_be_copied()
-
     cpdef Chain copy(self):
-        cdef Chain obj = Chain(self.first.copy(), self.second.copy())
+        cdef Chain obj
+
+        obj = Chain(self.first.copy(), self.second.copy())
         obj.use_second = self.use_second
+
         return obj
 
     cpdef object next(self):

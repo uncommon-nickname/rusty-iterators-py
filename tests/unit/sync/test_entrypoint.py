@@ -17,9 +17,6 @@ def test_items_constructor() -> None:
 def test_sequence_iterator_can_be_copied() -> None:
     it = LIter.from_seq("abcd")
     it.next()
-
-    assert it.can_be_copied()
-
     cp = it.copy()
 
     assert it.collect() == cp.collect() == ["b", "c", "d"]
@@ -28,8 +25,6 @@ def test_sequence_iterator_can_be_copied() -> None:
 def test_iter_iterator_can_be_copied() -> None:
     it = LIter.from_it(x for x in [1, 2, 3, 4, 5])
     it.next()
-
-    assert it.can_be_copied()
 
     cp1 = it.copy()
     cp1.next()
@@ -45,8 +40,6 @@ def test_iter_iterator_can_be_copied() -> None:
 def test_items_iterator_can_be_copied() -> None:
     it = LIter.from_items(1, 2, 3)
     it.next()
-
-    assert it.can_be_copied()
 
     cp = it.copy()
 

@@ -35,8 +35,6 @@ def test_can_be_copied(use_cache: bool) -> None:
     it = LIter.from_items(1, 2, 3, 4).moving_window(2, use_cache)
     it.next()
 
-    assert it.can_be_copied()
-
     cp = it.copy()
 
     assert it.collect() == cp.collect() == [[2, 3], [3, 4]]

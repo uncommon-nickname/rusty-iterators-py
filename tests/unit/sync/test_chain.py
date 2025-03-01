@@ -10,9 +10,6 @@ def test_multiple_chains() -> None:
 def test_chain_can_be_copied() -> None:
     it = LIter.from_items(1, 2).chain(LIter.from_items(3, 4))
     it.next()
-
-    assert it.can_be_copied()
-
     cp = it.copy()
 
     assert it.collect() == cp.collect() == [2, 3, 4]
