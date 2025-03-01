@@ -56,7 +56,11 @@ cdef class IterInterface:
         raise NotImplementedError
 
     cpdef int count(self):
-        cdef result = self.fold(0, _increment_counter)
+        cdef int result = 0
+        
+        for _ in self:
+            result += 1
+
         return result
 
     cpdef IterInterface cycle(self, bint use_cache=True):
