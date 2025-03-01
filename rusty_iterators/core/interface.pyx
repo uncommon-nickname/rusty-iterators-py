@@ -7,8 +7,6 @@ cdef inline object _aggregate_sum(object acc, object x):
 cdef inline object _persist_last_item(object _, object x):
     return x
 
-cdef inline int _increment_counter(int acc, object _):
-    return acc + 1
 
 cdef class IterInterface:
     def __iter__(self):
@@ -56,7 +54,11 @@ cdef class IterInterface:
         raise NotImplementedError
 
     cpdef int count(self):
-        cdef result = self.fold(0, _increment_counter)
+        cdef int result = 0
+        
+        for _ in self:
+            result += 1
+
         return result
 
     cpdef IterInterface cycle(self, bint use_cache=True):
