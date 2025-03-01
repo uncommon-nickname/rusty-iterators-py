@@ -8,10 +8,10 @@ cdef class CopiableGenerator:
     cdef list cache
     cdef int ptr
 
-    def __cinit__(self, object it, list cache, int ptr):
+    def __cinit__(self, object it):
         self.it = it
-        self.cache = cache
-        self.ptr = ptr
+        self.cache = []
+        self.ptr = 0
 
     def __iter__(self):
         return self
@@ -36,7 +36,12 @@ cdef class CopiableGenerator:
         return f"CopiableGenerator(self.it={self.it})"
 
     cpdef CopiableGenerator copy(self):
-        cdef CopiableGenerator obj = CopiableGenerator(self.it, self.cache, self.ptr)
+        cdef CopiableGenerator obj
+
+        obj = CopiableGenerator(self.it)
+        obj.cache = self.cache
+        obj.ptr = self.ptr
+
         return obj
 
 @cython.final
@@ -86,7 +91,7 @@ cdef class IterWrapper(IterInterface):
         # Not only we have to maintain the cache, but also call more
         # functions. To take as small performance hit as possible, we
         # initialize this type only if user decides to make a copy.
-        self.it = CopiableGenerator(self.it, [], 0)
+        self.it = CopiableGenerator(self.it)
 
         return IterWrapper(self.it.copy())
 
