@@ -27,8 +27,6 @@ def test_zip_copy_saves_state_of_iterators() -> None:
     it = LIter.from_items(1, 2).zip(LIter.from_items("a", "b"))
     it.next()
 
-    assert it.can_be_copied()
-
     cp = it.copy()
 
     assert cp.collect() == [(2, "b")]

@@ -51,12 +51,12 @@ cdef class SeqWrapper(IterInterface):
     def __str__(self):
         return f"SeqWrapper(ptr={self.ptr}, s={len(self.s)})"
 
-    cpdef bint can_be_copied(self):
-        return True
-
     cpdef SeqWrapper copy(self):
-        cdef SeqWrapper obj = SeqWrapper(self.s)
+        cdef SeqWrapper obj
+
+        obj = SeqWrapper(self.s)
         obj.ptr = self.ptr
+
         return obj
 
     cpdef object next(self):
@@ -77,13 +77,15 @@ cdef class IterWrapper(IterInterface):
     def __str__(self):
         return f"IterWrapper(it={self.it})"
 
-    cpdef bint can_be_copied(self):
-        return True
-
     cpdef IterWrapper copy(self):
         if isinstance(self.it, (IterInterface, CopiableGenerator)):
             return IterWrapper(self.it.copy())
 
+        # NOTE: 01.03.2025 <@uncommon-nickname>
+        # Using this wrapper type, makes the item consumption slower.
+        # Not only we have to maintain the cache, but also call more
+        # functions. To take as small performance hit as possible, we
+        # initialize this type only if user decides to make a copy.
         self.it = CopiableGenerator(self.it, [], 0)
 
         return IterWrapper(self.it.copy())
