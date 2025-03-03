@@ -64,12 +64,16 @@ cdef class SeqWrapper(IterInterface):
 
         return obj
 
+    @cython.boundscheck(False)
     cpdef object next(self):
-        try:
+        cdef object item
+
+        if self.ptr < len(self.s):
             item = self.s[self.ptr]
-        except IndexError as exc:
-            raise StopIteration from exc
-        self.ptr += 1
+            self.ptr += 1
+        else:
+            raise StopIteration
+
         return item
 
 @cython.final

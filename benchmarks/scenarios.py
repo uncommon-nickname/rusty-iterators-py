@@ -11,6 +11,11 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
 
 
+@BenchmarkManager.register(arg=list(range(1_000_000)))
+def benchmark_rusty_iterators_sequence_wrapper(arg: Iterable[int]) -> None:
+    _ = LIter.from_seq(arg).collect()  # type: ignore[arg-type]
+
+
 @BenchmarkManager.register(arg=range(1_000_000))
 def benchmark_rusty_iterators_map(arg: Iterable[int]) -> None:
     _ = LIter.from_it(iter(arg)).map(lambda x: x * 2).collect()
