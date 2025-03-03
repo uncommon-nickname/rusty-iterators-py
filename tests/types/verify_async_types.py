@@ -21,6 +21,7 @@ async def verify_async_iterator_type() -> None:
     assert_type(ait, AsyncIterWrapper[int])
     assert_type(await ait.anext(), int)
     assert_type(await ait.acollect(), list[int])
+    assert_type(ait.copy(), AsyncIterWrapper[int])
 
 
 async def verify_async_map_type() -> None:
@@ -32,6 +33,7 @@ async def verify_async_map_type() -> None:
     assert_type(ait, AsyncMap[str])
     assert_type(await ait.anext(), str)
     assert_type(await ait.acollect(), list[str])
+    assert_type(ait.copy(), AsyncMap[str])
 
 
 async def verify_async_adapter_iterator_type() -> None:
