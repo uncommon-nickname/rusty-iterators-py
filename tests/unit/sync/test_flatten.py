@@ -1,3 +1,5 @@
+import gc
+
 import pytest
 
 from rusty_iterators import LIter
@@ -32,3 +34,13 @@ def test_copy_flatten() -> None:
 
     assert it.collect() == [3, 4]
     assert copy.collect() == [2, 3, 4]
+
+
+def test_flatten_deallocate() -> None:
+    it = LIter.from_items([[1, 2, 3], [4, 5, 6]]).flatten()
+    obj_id = id(it)
+
+    del it
+    gc.collect()
+
+    assert not any(id(obj) == obj_id for obj in gc.get_objects())
