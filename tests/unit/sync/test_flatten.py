@@ -1,3 +1,7 @@
+import gc
+import sys
+from unittest.mock import Mock
+
 import pytest
 
 from rusty_iterators import LIter
@@ -32,3 +36,28 @@ def test_copy_flatten() -> None:
 
     assert it.collect() == [3, 4]
     assert copy.collect() == [2, 3, 4]
+
+
+def test_flatten_deallocate() -> None:
+    m1 = Mock()
+    m2 = Mock()
+
+    assert sys.getrefcount(m1) == 2
+    assert sys.getrefcount(m2) == 2
+
+    it = LIter.from_items([[Mock()], [m1], [m2], [Mock()], [Mock()], [Mock()]])
+
+    assert sys.getrefcount(m1) == 3
+    assert sys.getrefcount(m2) == 3
+
+    it.flatten().collect()
+
+    assert sys.getrefcount(m1) == 3
+    assert sys.getrefcount(m2) == 3
+
+    del it
+
+    gc.collect()
+
+    assert sys.getrefcount(m1) == 2
+    assert sys.getrefcount(m2) == 2
