@@ -18,8 +18,6 @@ def test_step_by_can_be_copied() -> None:
     it = LIter.from_items(1, 2, 3).step_by(2)
     it.next()
 
-    assert it.can_be_copied()
-
     cp = it.copy()
 
     assert it.collect() == cp.collect() == [3]

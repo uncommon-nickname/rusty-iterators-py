@@ -3,7 +3,6 @@ from rusty_iterators.core.async_interface cimport AsyncIterAdapter
 cdef class IterInterface:
     cpdef IterInterface advance_by(self, int n)
     cpdef AsyncIterAdapter as_async(self)
-    cpdef bint can_be_copied(self)
     cpdef Chain chain(self, IterInterface second)
     cpdef list collect(self)
     cpdef object collect_into(self, object factory)

@@ -17,11 +17,14 @@ cdef class AsyncIterInterface:
 
     @cython.iterable_coroutine
     async def acollect(self):
-        return [item async for item in self]
+        cdef list result = [item async for item in self]
+        return result
 
     cpdef AsyncMap amap(self, object afunc):
         return AsyncMap(self, afunc)
 
+    cpdef AsyncIterInterface copy(self):
+        raise NotImplementedError
 
 @cython.final
 cdef class AsyncIterAdapter(AsyncIterInterface):
@@ -38,6 +41,12 @@ cdef class AsyncIterAdapter(AsyncIterInterface):
         except StopIteration as exc:
             raise StopAsyncIteration from exc
 
+    cpdef AsyncIterAdapter copy(self):
+        cdef AsyncIterAdapter obj
+
+        obj = AsyncIterAdapter(self.it.copy())
+
+        return obj
 
 @cython.final
 cdef class AsyncMap(AsyncIterInterface):
@@ -51,3 +60,10 @@ cdef class AsyncMap(AsyncIterInterface):
     @cython.iterable_coroutine
     async def anext(self):
         return await self.afunc(await self.ait.anext())
+
+    cpdef AsyncMap copy(self):
+        cdef AsyncMap obj
+
+        obj = AsyncMap(self.ait.copy(), self.afunc)
+
+        return obj
