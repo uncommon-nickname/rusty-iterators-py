@@ -1,5 +1,7 @@
 import cython
 from rusty_iterators.core.async_interface cimport AsyncIterAdapter
+from cpython.list cimport PyList_SET_ITEM, PyList_New
+from cpython.ref cimport Py_INCREF
 
 cdef inline object _aggregate_sum(object acc, object x):
     return acc + x
@@ -185,6 +187,7 @@ cdef class Flatten(IterInterface):
         self.it = it
         self.ptr = 0
         self.cache = []
+        self.cache_size = 0
 
     def __str__(self):
         return f"Flatten(it={self.it})"
@@ -195,23 +198,33 @@ cdef class Flatten(IterInterface):
         obj = Flatten(self.it.copy())
         obj.cache = self.cache
         obj.ptr = self.ptr
+        obj.cache_size = self.cache_size
 
         return obj
 
     cpdef object next(self):
         cdef object item
         cdef object indexable_item
+        cdef int i
 
-        if self.cache and self.ptr < len(self.cache):
+        if self.ptr < self.cache_size:
             item = self.cache[self.ptr]
             self.ptr += 1
             return item
 
         self.ptr = 0
         indexable_item = self.it.next()
-        self.cache = indexable_item[1:]
-        return indexable_item[0]
 
+        self.cache_size = len(indexable_item) - 1
+
+        self.cache = PyList_New(self.cache_size)
+        
+        for i in range(self.cache_size):
+            item = indexable_item[i + 1]
+            Py_INCREF(item)
+            PyList_SET_ITEM(self.cache, i, item)
+
+        return indexable_item[0]
 
 @cython.final
 cdef class Inspect(IterInterface):

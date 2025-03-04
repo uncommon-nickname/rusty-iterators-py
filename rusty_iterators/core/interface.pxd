@@ -39,6 +39,8 @@ cdef class Flatten(IterInterface):
     cdef IterInterface it
     cdef int ptr
     cdef list cache
+    cdef int cache_size
+
 
 cdef class Inspect(IterInterface):
     cdef IterInterface it
