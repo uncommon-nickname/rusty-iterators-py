@@ -28,4 +28,4 @@ jobs:
 
       - name: Run tests with tox
         run: |
-          poetry run tox -e py${{ matrix.python-version//./ }}
+          poetry run tox -e py${{ matrix.python-version }}
