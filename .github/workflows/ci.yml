@@ -6,6 +6,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         include:
           - python-version: "3.9"
@@ -37,4 +38,3 @@ jobs:
       - name: Run tests with tox
         run: |
           poetry run tox -e ${{ matrix.tox-env }}
-        continue-on-error: true
