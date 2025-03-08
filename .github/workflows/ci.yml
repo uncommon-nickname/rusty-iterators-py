@@ -7,7 +7,12 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["39", "310", "311", "312"]
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
+        tox-env:
+          - py39
+          - py310
+          - py311
+          - py312
 
     steps:
       - name: Checkout code
@@ -28,4 +33,4 @@ jobs:
 
       - name: Run tests with tox
         run: |
-          poetry run tox -e py${{ matrix.python-version }}
+          poetry run tox -e py${{ matrix.tox-env }}
