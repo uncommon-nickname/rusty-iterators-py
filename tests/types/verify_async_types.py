@@ -1,7 +1,14 @@
 from __future__ import annotations
 
+import sys
+
+if sys.version_info < (3, 11):
+    from typing_extensions import assert_type
+else:
+    from typing import assert_type
+
 from collections.abc import AsyncIterator
-from typing import TYPE_CHECKING, assert_type
+from typing import TYPE_CHECKING
 
 from rusty_iterators import LIter
 
