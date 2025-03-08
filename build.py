@@ -33,11 +33,7 @@ def compile_cython() -> None:
     ]
 
     dist = Distribution(
-        {
-            "ext_modules": cythonize(
-                extensions, compiler_directives={"language_level": "3", "binding": True}
-            )
-        }
+        {"ext_modules": cythonize(extensions, compiler_directives={"language_level": "3", "binding": True})}
     )
 
     cmd = build_ext(dist)  # type:ignore[arg-type]
