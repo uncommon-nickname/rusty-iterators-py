@@ -1,4 +1,5 @@
-# ruff: noqa: I001
+# ruff: noqa
+# type: ignore
 import os
 import shutil
 from distutils.command.build_ext import build_ext
@@ -33,14 +34,18 @@ def compile_cython() -> None:
     ]
 
     dist = Distribution(
-        {"ext_modules": cythonize(extensions, compiler_directives={"language_level": "3", "binding": True})}
+        {
+            "ext_modules": cythonize(
+                extensions, compiler_directives={"language_level": "3", "binding": True}
+            )
+        }
     )
 
-    cmd = build_ext(dist)  # type:ignore[arg-type]
+    cmd = build_ext(dist)
     cmd.ensure_finalized()
     cmd.run()
 
-    for output in cmd.get_outputs():  # type: ignore[no-untyped-call]
+    for output in cmd.get_outputs():
         relative_extension = os.path.relpath(output, cmd.build_lib)
         shutil.copyfile(output, relative_extension)
         mode = os.stat(relative_extension).st_mode
