@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "rusty-iterators"
-version = "0.1.0"
+version = "1.0.0"
 description = "Rust-like iterators in Python."
 authors = ["Wiktor Nowak <@uncommon-nickname>", "Dawid Sielużycki <@Leghart>"]
 readme = "README.md"
@@ -17,7 +17,7 @@ generate-setup-file = false
 script = "build.py"
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = "^3.10"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "1.13.0"
@@ -29,6 +29,7 @@ ruff = "0.8.1"
 setuptools = "75.8.0"
 cython = "3.0.11"
 types-setuptools = "75.8.0.20250110"
+tox = "4.24.2"
 
 [tool.ruff]
 line-length = 119

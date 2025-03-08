@@ -8,6 +8,7 @@ runner.py
 *.c
 *.html
 *.egg-info
+.tox
 
 build/
 dist/
