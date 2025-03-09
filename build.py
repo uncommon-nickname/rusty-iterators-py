@@ -1,10 +1,8 @@
-# ruff: noqa
-# type: ignore
 import os
 import shutil
-from distutils.command.build_ext import build_ext
 
 from Cython.Build import cythonize
+from distutils.command.build_ext import build_ext
 from setuptools import Extension
 from setuptools.dist import Distribution
 
