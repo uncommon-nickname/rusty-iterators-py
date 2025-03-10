@@ -9,7 +9,6 @@ cdef inline object _aggregate_sum(object acc, object x):
 cdef inline object _persist_last_item(object _, object x):
     return x
 
-
 cdef class IterInterface:
     def __iter__(self):
         return self
@@ -54,7 +53,7 @@ cdef class IterInterface:
 
     cpdef int count(self):
         cdef int result = 0
-        
+
         for _ in self:
             result += 1
 
@@ -100,6 +99,9 @@ cdef class IterInterface:
 
     cpdef object nth(self, int n):
         return self.advance_by(n).next()
+
+    cpdef Peekable peekable(self):
+        return Peekable(self)
 
     cpdef object reduce(self, object func):
         cdef object init = self.next()
@@ -218,7 +220,7 @@ cdef class Flatten(IterInterface):
         self.cache_size = len(indexable_item) - 1
 
         self.cache = PyList_New(self.cache_size)
-        
+
         for i in range(self.cache_size):
             item = indexable_item[i + 1]
             Py_INCREF(item)
@@ -405,6 +407,40 @@ cdef class CopyMovingWindow(IterInterface):
         self.it = self.orig.copy()
 
         return result
+
+@cython.final
+cdef class Peekable(IterInterface):
+    def __cinit__(self, IterInterface it) -> None:
+        self.it = it
+        self.was_peeked = False
+
+    def __str__(self):
+        return f"Peekable(was_peeked={self.was_peeked}, peeked={self.peeked}, it={self.it})"
+
+    cpdef Peekable copy(self):
+        cdef Peekable obj
+
+        obj = Peekable(self.it.copy())
+        obj.was_peeked = self.was_peeked
+        obj.peeked = self.peeked
+
+        return obj
+
+    cpdef object next(self):
+        if self.was_peeked:
+            self.was_peeked = False
+            return self.peeked
+
+        return self.it.next()
+
+    cpdef object peek(self):
+        if self.was_peeked:
+            return self.peeked
+
+        self.peeked = self.next()
+        self.was_peeked = True
+
+        return self.peeked
 
 @cython.final
 cdef class StepBy(IterInterface):

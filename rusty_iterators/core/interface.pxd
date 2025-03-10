@@ -20,6 +20,7 @@ cdef class IterInterface:
     cpdef IterInterface moving_window(self, int size, bint use_cache = *)
     cpdef object next(self)
     cpdef object nth(self, int n)
+    cpdef Peekable peekable(self)
     cpdef object reduce(self, object func)
     cpdef StepBy step_by(self, int step)
     cpdef object sum(self)
@@ -70,6 +71,13 @@ cdef class CopyMovingWindow(IterInterface):
     cdef IterInterface it
     cdef IterInterface orig
     cdef int size
+
+cdef class Peekable(IterInterface):
+    cdef IterInterface it
+    cdef object peeked
+    cdef bint was_peeked
+
+    cpdef object peek(self)
 
 cdef class StepBy(IterInterface):
     cdef bint first_take
