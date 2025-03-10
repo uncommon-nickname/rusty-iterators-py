@@ -33,7 +33,6 @@ tox = "4.24.2"
 
 [tool.ruff]
 line-length = 119
-target-version = "py312"
 
 [tool.ruff.lint]
 extend-select = ["I", "S", "RUF"]
@@ -73,9 +72,23 @@ test = "pytest -s -v tests/"
 mypy = "mypy . --check"
 format = "ruff format --check"
 lint = "ruff check"
+tox = "tox run"
 all.sequence = ["format", "lint", "mypy", "test"]
 all.ignore_fail = "return_non_zero"
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
+
+[tool.tox]
+envlist = ["py310", "py311", "py312", "py313"]
+
+[tool.tox.test]
+deps = ["poetry"]
+ignore_errors = true
+commands = [
+    ["poetry run poe format --target_version={envname}"],
+    ["poetry run poe lint --target_version={envname}"],
+    ["poetry run poe mypy --target_version={envname}"],
+    ["poetry run poe test --target_version={envname}"],
+]
