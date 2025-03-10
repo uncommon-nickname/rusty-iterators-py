@@ -39,7 +39,7 @@ def compile_cython() -> None:
     cmd.ensure_finalized()
     cmd.run()
 
-    for output in cmd.get_outputs():  # type: ignore[no-untyped-call]
+    for output in cmd.get_outputs():
         relative_extension = os.path.relpath(output, cmd.build_lib)
         shutil.copyfile(output, relative_extension)
         mode = os.stat(relative_extension).st_mode
