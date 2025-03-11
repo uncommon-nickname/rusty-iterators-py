@@ -1,0 +1,2 @@
+include rusty_iterators/core/*.pyx
+include rusty_iterators/core/*.pxd
