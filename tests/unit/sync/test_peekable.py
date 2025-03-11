@@ -12,11 +12,20 @@ def test_peeked_iterator_returns_same_element() -> None:
 
 def test_peeked_iterator_resets_state() -> None:
     it = LIter.from_items(1, 2, 3).peekable()
-    it.peek()
 
+    assert it.peek() == 1
     assert it.next() == 1
     assert it.next() == 2
     assert it.next() == 3
+
+
+def peek_after_next_returns_new_value() -> None:
+    it = LIter.from_items(1, 2, 3).peekable()
+
+    assert it.peek() == 1
+    assert it.next() == 1
+    assert it.peek() == 2
+    assert it.next() == 2
 
 
 def test_peeked_iterator_can_be_peeked_again() -> None:
