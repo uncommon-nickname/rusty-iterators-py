@@ -15,18 +15,18 @@ repos:
     hooks:
       - id: mypy
         name: mypy
-        entry: poetry run mypy
+        entry: uv run mypy --check
         language: system
         types: [python]
 
       - id: ruff-lint
         name: ruff-lint
-        entry: poetry run poe lint
+        entry: uv run ruff check
         language: system
         types: [python]
 
       - id: ruff-format
         name: ruff-format
-        entry: poetry run poe format
+        entry: uv run ruff format
         language: system
         types: [python]
