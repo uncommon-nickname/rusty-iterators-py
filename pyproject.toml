@@ -1,3 +1,7 @@
+[build-system]
+requires = ["setuptools==75.8.0", "cython==3.0.11"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "rusty-iterators"
 version = "1.0.0"
@@ -5,7 +9,7 @@ description = "Rust-like iterators in Python."
 authors = [{ name = "Wiktor Nowak" }, { name = "Dawid Sielużycki" }]
 requires-python = ">=3.10,<3.14"
 readme = "README.md"
-license = { text = "MIT" }
+license = { file = "LICENSE.md" }
 
 [dependency-groups]
 dev = [
@@ -19,12 +23,8 @@ dev = [
     "types-setuptools==75.8.0.20250110",
 ]
 
-[build-system]
-requires = ["setuptools==75.8.0", "cython==3.0.11"]
-build-backend = "setuptools.build_meta"
-
-[tool.setuptools.package-data]
-core = ["*.pyx", "*.pxd"]
+[tool.uv]
+default-groups = ["dev"]
 
 [tool.ruff]
 line-length = 119

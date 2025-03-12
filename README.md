@@ -11,10 +11,16 @@ Project heavily inspired by great `Rust` iterators and crates like `Rayon` and `
 
 ## 🛠 Local build and installation
 
-To create a distributable package (`.whl`):
+As a build system and dependency manager we use [uv](https://docs.astral.sh/uv/getting-started/installation/). As a build backend we use `setuptools` with `cython`. We provide a simple `Makefile` for easier development command access. To install the development dependencies, you can run:
 
 ```bash
-poetry build
+make install
+```
+
+To create a distributable package (`.whl`), run:
+
+```bash
+make build
 ```
 
 this will generate the `C` code from cython files, compile them into the `.so` libraries and build the final package with type stubs. A new `dist/` directory will appear in the project root, where your distributable will be stored.
@@ -25,36 +31,36 @@ To install the built package for local testing:
 pip3 install dist/rusty_iterators-<your-build-version>.whl
 ```
 
-You can also setup the installation in your local virtual environment, by running:
-
-```bash
-poetry install
-```
-
-this will build your package and automatically install it into the environment.
-
 ## Coding code of conduct
 
 Any contributions are welcome, but please adhere to our code of conduct.
 
-#### Conventional Commits
+#### Conventional commits
 
 We utilize [conventional commits](https://gist.github.com/qoomon/5dfcdf8eec66a051ecd85625518cfd13). We don't maintain a `changelog` manually. Squashed commits, keeping the correct convention should be more than enough to create a release summary.
 
-#### Static typing
+#### Linting and formatting
 
-We are huge advocates of statically typed Python and put a lot of effort into keeping the types as clean as possible. We also maintain the types static tests located in the `tests/types/` directory. All of the contributed code should be properly typed and make changes in the type stubs if needed. To run the static types tests, simply run:
+As a linter and formatter, we use [ruff](https://docs.astral.sh/ruff/). You can run it via:
 
 ```bash
-poetry run poe mypy
+make lint
 ```
 
-#### Tests
+All changes, should ship with proper format and no lint errors, which will be verified in CI.
 
-We maintain a simple testing pipeline, trying to keep all of the shipped features fully tested. All of the bugfixes and features should ship with proper tests. To run the testing pipeline, simply run:
+#### Testing
+
+All changes should ship with proper tests. We support multiple `python` versions, so to ensure everything works on every version, you can run the test on all of the via `tox`:
 
 ```bash
-poetry run poe test
+make tox
+```
+
+You can also run the tests on your current version:
+
+```bash
+make test
 ```
 
 ## Examples
