@@ -20,6 +20,9 @@ format: .uv
 .PHONY: lint
 lint: .uv
 	uv run ruff check $(sources)
+
+.PHONY: mypy
+mypy: .uv
 	uv run mypy $(sources) --check
 
 .PHONY: tox
@@ -29,6 +32,9 @@ tox: .uv
 .PHONY: test
 test: .uv
 	uv run pytest -s -v
+
+.PHONY: all
+all: format lint mypy test
 
 .PHONY: bench
 bench: .uv

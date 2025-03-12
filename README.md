@@ -49,6 +49,14 @@ make lint
 
 All changes, should ship with proper format and no lint errors, which will be verified in CI.
 
+#### Static typing
+
+We are huge advocates of statically typed Python and put a lot of effort into keeping the types as clean as possible. We also maintain the types static tests located in the `tests/types/` directory. All of the contributed code should be properly typed and make changes in the type stubs if needed. To check the types:
+
+```bash
+make mypy
+```
+
 #### Testing
 
 All changes should ship with proper tests. We support multiple `python` versions, so to ensure everything works on every version, you can run the test on all of the via `tox`:
