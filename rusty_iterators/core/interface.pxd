@@ -22,6 +22,7 @@ cdef class IterInterface:
     cpdef object nth(self, int n)
     cpdef Peekable peekable(self)
     cpdef object reduce(self, object func)
+    cpdef Skip skip(self, int amount)
     cpdef StepBy step_by(self, int step)
     cpdef object sum(self)
     cpdef Take take(self, int amount)
@@ -78,6 +79,10 @@ cdef class Peekable(IterInterface):
     cdef bint was_peeked
 
     cpdef object peek(self)
+
+cdef class Skip(IterInterface):
+    cdef IterInterface it
+    cdef int amount
 
 cdef class StepBy(IterInterface):
     cdef bint first_take

@@ -107,6 +107,9 @@ cdef class IterInterface:
         cdef object init = self.next()
         return self.fold(init, func)
 
+    cpdef Skip skip(self, int amount):
+        return Skip(self, amount)
+
     cpdef StepBy step_by(self, int step):
         return StepBy(self, step)
 
@@ -409,6 +412,34 @@ cdef class CopyMovingWindow(IterInterface):
         return result
 
 @cython.final
+cdef class Chain(IterInterface):
+    def __cinit__(self, IterInterface first, IterInterface second):
+        self.first = first
+        self.second = second
+        self.use_second = False
+
+    def __str__(self):
+        return f"Chain(use_second={self.use_second}, first={self.first}, second={self.second})"
+
+    cpdef Chain copy(self):
+        cdef Chain obj
+
+        obj = Chain(self.first.copy(), self.second.copy())
+        obj.use_second = self.use_second
+
+        return obj
+
+    cpdef object next(self):
+        if self.use_second:
+            return self.second.next()
+
+        try:
+            return self.first.next()
+        except StopIteration:
+            self.use_second = True
+            return self.next()
+
+@cython.final
 cdef class Peekable(IterInterface):
     def __cinit__(self, IterInterface it) -> None:
         self.it = it
@@ -441,6 +472,30 @@ cdef class Peekable(IterInterface):
         self.was_peeked = True
 
         return self.peeked
+
+@cython.final
+cdef class Skip(IterInterface):
+    def __cinit__(self, IterInterface it, amount: int) -> None:
+        self.it = it
+        self.amount = amount
+
+    def __str__(self):
+        return f"Skip(amount={self.amount}), it={self.it}"
+
+    cpdef Skip copy(self):
+        cdef Skip obj = Skip(self.it.copy(), self.amount)
+        return obj
+
+    cpdef object next(self):
+        cdef object item
+
+        if self.amount > 0:
+            item = self.it.nth(self.amount)
+            self.amount = 0
+        else:
+            item = self.it.next()
+
+        return item
 
 @cython.final
 cdef class StepBy(IterInterface):
@@ -520,31 +575,3 @@ cdef class Zip(IterInterface):
 
     cpdef object next(self):
         return (self.first.next(), self.second.next())
-
-@cython.final
-cdef class Chain(IterInterface):
-    def __cinit__(self, IterInterface first, IterInterface second):
-        self.first = first
-        self.second = second
-        self.use_second = False
-
-    def __str__(self):
-        return f"Chain(use_second={self.use_second}, first={self.first}, second={self.second})"
-
-    cpdef Chain copy(self):
-        cdef Chain obj
-
-        obj = Chain(self.first.copy(), self.second.copy())
-        obj.use_second = self.use_second
-
-        return obj
-
-    cpdef object next(self):
-        if self.use_second:
-            return self.second.next()
-
-        try:
-            return self.first.next()
-        except StopIteration:
-            self.use_second = True
-            return self.next()
