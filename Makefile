@@ -11,7 +11,8 @@ install: .uv
 
 .PHONY: build
 build: .uv
-	uv build
+	uv run python setup.py build_ext -i
+	uv run python setup.py sdist
 
 .PHONY: format
 format: .uv
