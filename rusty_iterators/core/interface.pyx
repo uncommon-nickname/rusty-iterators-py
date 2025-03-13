@@ -25,7 +25,7 @@ cdef class IterInterface:
     def any(self, f=None):
         return any(f(i) for i in self) if f else any(self)
 
-    cpdef IterInterface advance_by(self, int n):
+    cpdef void advance_by(self, int n):
         if n < 0:
             raise ValueError("Amount to advance by must be greater or equal to 0.")
 
@@ -34,8 +34,6 @@ cdef class IterInterface:
                 self.next()
             except StopIteration:
                 break
-
-        return self
 
     cpdef AsyncIterAdapter as_async(self):
         return AsyncIterAdapter(self)
@@ -98,7 +96,8 @@ cdef class IterInterface:
         raise NotImplementedError
 
     cpdef object nth(self, int n):
-        return self.advance_by(n).next()
+        self.advance_by(n)
+        return self.next()
 
     cpdef Peekable peekable(self):
         return Peekable(self)
@@ -464,13 +463,10 @@ cdef class StepBy(IterInterface):
         return obj
 
     cpdef object next(self):
-        if self.first_take:
-            self.first_take = False
-        else:
-            self.it.advance_by(self.step_minus_one)
+        cdef int step_size = 0 if self.first_take else self.step_minus_one
+        self.first_take = False
 
-        return self.it.next()
-
+        return self.it.nth(step_size)
 
 @cython.final
 cdef class Take(IterInterface):
