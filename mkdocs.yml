@@ -1,0 +1,4 @@
+site_name: Rusty Iterators
+site_description: Light, lazy, fast and statically typed iterators. Inspired by Rust, built in Cython.
+strict: true
+theme: readthedocs

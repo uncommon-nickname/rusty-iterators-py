@@ -5,7 +5,7 @@ sources = benchmarks examples rusty_iterators tests
 
 .PHONY: install
 install: .uv
-	uv sync --frozen --group dev --all-extras
+	uv sync --frozen --group all --all-extras
 	uv pip install pre-commit
 	uv run pre-commit install --install-hooks
 
@@ -40,6 +40,14 @@ all: format lint mypy test
 bench: .uv
 	uv run python3 -m benchmarks
 
+.PHONY: docs
+docs: .uv
+	uv run mkdocs build --strict
+
+.PHONY: docs-serve
+docs-serve: .uv
+	uv run mkdocs serve --strict
+
 .PHONY: clean
 clean:
 	rm -rf `find . -name __pycache__`
@@ -50,3 +58,4 @@ clean:
 	rm -rf .tox
 	rm -rf build
 	rm -rf dist
+	rm -rf site

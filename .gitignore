@@ -3,12 +3,13 @@ __pycache__
 .pytest_cache
 .ruff_cache
 .venv
+.tox
 runner.py
 *.so
 *.c
 *.html
 *.egg-info
-.tox
 
 build/
 dist/
+site/
