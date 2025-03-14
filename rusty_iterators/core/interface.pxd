@@ -1,7 +1,7 @@
 from rusty_iterators.core.async_interface cimport AsyncIterAdapter
 
 cdef class IterInterface:
-    cpdef IterInterface advance_by(self, int n)
+    cpdef void advance_by(self, int n)
     cpdef AsyncIterAdapter as_async(self)
     cpdef Chain chain(self, IterInterface second)
     cpdef list collect(self)
@@ -41,7 +41,6 @@ cdef class Flatten(IterInterface):
     cdef int ptr
     cdef list cache
     cdef int cache_size
-
 
 cdef class Inspect(IterInterface):
     cdef IterInterface it
