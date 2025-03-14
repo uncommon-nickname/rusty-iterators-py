@@ -26,6 +26,7 @@ if TYPE_CHECKING:
         Inspect,
         Map,
         Peekable,
+        Skip,
         StepBy,
         Take,
         Zip,
@@ -239,3 +240,10 @@ def verify_peekable_type() -> None:
     assert_type(it, Peekable[int])
     assert_type(it.next(), int)
     assert_type(it.peek(), int)
+
+
+def verify_skip_type() -> None:
+    it = LIter.from_items(1, 2, 3).skip(2)
+
+    assert_type(it, Skip[int])
+    assert_type(it.next(), int)

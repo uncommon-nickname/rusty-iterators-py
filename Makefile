@@ -52,6 +52,8 @@ docs-serve: .uv
 .PHONY: clean
 clean:
 	rm -rf `find . -name __pycache__`
+	rm -rf `find . -name *.c`
+	rm -rf `find . -name *.so`
 	rm -rf *.egg-info
 	rm -rf .mypy_cache
 	rm -rf .ruff_cache
