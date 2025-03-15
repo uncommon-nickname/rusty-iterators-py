@@ -70,3 +70,8 @@ def benchmark_rusty_iterators_count(arg: Iterable[int]) -> None:
 @BenchmarkManager.register(arg=range(1_000_000))
 def benchmark_stdlib_count(arg: Iterable[int]) -> None:
     _ = len(list(arg))
+
+
+@BenchmarkManager.register(arg=range(1_000_000))
+def benchmark_rusty_iterators_unique(arg: Iterable[int]) -> None:
+    _ = LIter.from_it(iter(arg)).unique().collect()
